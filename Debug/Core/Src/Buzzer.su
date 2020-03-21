@@ -1,0 +1,3 @@
+Buzzer.c:12:10:getPrescallerForFreq	0	static
+Buzzer.c:20:6:BuzzerSetFreq	0	static
+Buzzer.c:27:6:BuzzerSetVolume	0	static
