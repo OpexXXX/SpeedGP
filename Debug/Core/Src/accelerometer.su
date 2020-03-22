@@ -1,0 +1,9 @@
+accelerometer.c:164:12:I2C_Write	24	static
+accelerometer.c:189:12:I2C_ReadMulti	40	static
+accelerometer.c:215:12:I2C_Read	32	static
+accelerometer.c:247:12:I2C_IsDeviceConnected	8	static
+accelerometer.c:261:21:MPU9250_Init	24	static
+accelerometer.c:362:21:TM_MPU9250_ReadAcce	32	static
+accelerometer.c:377:21:TM_MPU9250_ReadGyro	32	static
+accelerometer.c:390:21:TM_MPU9250_ReadMag	24	static
+accelerometer.c:407:21:TM_MPU9250_DataReady	16	static

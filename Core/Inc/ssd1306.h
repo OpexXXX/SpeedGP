@@ -11,6 +11,7 @@
 
 #include "stm32f1xx_hal.h"
 #include "fonts.h"
+#include "cmsis_os.h"
 
 /**
  * This Library is written and optimized by Olivier Van den Eede(4ilo) in 2016
@@ -60,7 +61,7 @@ typedef struct {
 
 //	Definition of the i2c port in main
 extern I2C_HandleTypeDef SSD1306_I2C_PORT;
-
+extern osSemaphoreId_t I2C_BinarySemHandle;
 //
 //  Function definitions
 //

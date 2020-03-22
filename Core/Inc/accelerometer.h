@@ -68,7 +68,7 @@ extern "C" {
  */
 
 #include "stm32f1xx_hal.h"
-
+#include "cmsis_os.h"
 
 /**
  * @defgroup TM_LIB_Macros
@@ -76,11 +76,7 @@ extern "C" {
  * @{
  */
 
-#ifndef MPU9250_I2C
 
-#define MPU9250_I2C             hi2c1
-
-#endif
 
 
 
@@ -99,7 +95,15 @@ extern "C" {
  * @{
  */
 
-extern I2C_HandleTypeDef MPU9250_I2C;
+extern I2C_HandleTypeDef hi2c1;
+extern osSemaphoreId_t I2C_BinarySemHandle;
+
+
+typedef enum _IIC_Result {
+	IIC_Result_Ok = 0x00,
+	IIC_Result_Error
+} IIC_Result;
+
 
 typedef enum _TM_MPU9250_Result_t {
     TM_MPU9250_Result_Ok = 0x00,
@@ -155,13 +159,17 @@ typedef struct _TM_MPU9250_t {
  * @{
  */
 
-TM_MPU9250_Result_t TM_MPU9250_Init(TM_MPU9250_t* MPU9250, TM_MPU9250_Device_t dev);
+TM_MPU9250_Result_t MPU9250_Init(TM_MPU9250_t* MPU9250, TM_MPU9250_Device_t dev);
 
 TM_MPU9250_Result_t TM_MPU9250_ReadAcce(TM_MPU9250_t* MPU9250);
 TM_MPU9250_Result_t TM_MPU9250_ReadGyro(TM_MPU9250_t* MPU9250);
 TM_MPU9250_Result_t TM_MPU9250_ReadMag(TM_MPU9250_t* MPU9250);
 TM_MPU9250_Result_t TM_MPU9250_DataReady(TM_MPU9250_t* MPU9250);
 
+IIC_Result I2C_Read(uint8_t device_address, uint8_t register_address, uint8_t* data) ;
+IIC_Result I2C_ReadMulti(uint8_t device_address, uint8_t register_address, uint8_t* data, uint16_t count);
+IIC_Result I2C_Write(uint8_t device_address, uint8_t register_address, uint8_t data);
+IIC_Result I2C_IsDeviceConnected(uint8_t device_address);
 /**
  * @}
  */

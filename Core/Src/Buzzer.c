@@ -9,13 +9,6 @@
 
 
 
-uint32_t getPrescallerForFreq(uint16_t freq){
-
-	uint32_t result =( (4000000/10)/freq)/2;
-	return result;
-			//(4000000/10)/1000 = 400Hz
-
-}
 
 void BuzzerSetFreq(uint16_t freq)
 {

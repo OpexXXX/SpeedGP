@@ -7,4 +7,4 @@ stm32f1xx_hal_msp.c:229:6:HAL_TIM_PWM_MspInit	8	static
 stm32f1xx_hal_msp.c:245:6:HAL_TIM_MspPostInit	32	static
 stm32f1xx_hal_msp.c:275:6:HAL_TIM_PWM_MspDeInit	0	static
 stm32f1xx_hal_msp.c:297:6:HAL_UART_MspInit	40	static
-stm32f1xx_hal_msp.c:363:6:HAL_UART_MspDeInit	0	static
+stm32f1xx_hal_msp.c:366:6:HAL_UART_MspDeInit	8	static

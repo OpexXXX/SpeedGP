@@ -11,7 +11,7 @@
 #include "stm32f1xx_hal.h"
 #include "cmsis_os.h"
 
-uint32_t getPrescallerForFreq(uint16_t freq);
+
 void BuzzerSetFreq(uint16_t freq);
 void BuzzerSetVolume(uint16_t volume);
 

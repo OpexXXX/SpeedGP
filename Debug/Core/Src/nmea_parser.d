@@ -1,5 +1,4 @@
-Core/Src/nmea_parser.o: \
- C:/Users/79029/Documents/GPSanalizer/nmea_parser.cpp \
- C:/Users/79029/Documents/GPSanalizer/nmea_parser.h
+Core/Src/nmea_parser.o: ../Core/Src/nmea_parser.cpp \
+ ../Core/Inc/nmea_parser.h
 
-C:/Users/79029/Documents/GPSanalizer/nmea_parser.h:
+../Core/Inc/nmea_parser.h:

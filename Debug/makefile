@@ -68,7 +68,7 @@ all: SpeedGPS.elf secondary-outputs
 
 # Tool invocations
 SpeedGPS.elf: $(OBJS) $(USER_OBJS) C:\Users\79029\STM32CubeIDE\workspace_1.3.0\SpeedGPS\STM32F103C8TX_FLASH.ld
-	arm-none-eabi-g++ -o "SpeedGPS.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\79029\STM32CubeIDE\workspace_1.3.0\SpeedGPS\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SpeedGPS.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -u _printf_float -o "SpeedGPS.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\79029\STM32CubeIDE\workspace_1.3.0\SpeedGPS\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SpeedGPS.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -u _printf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

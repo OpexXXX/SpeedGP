@@ -46,7 +46,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/Buzzer.h \
  ../Core/Inc/ssd1306.h ../Core/Inc/fonts.h ../Core/Inc/fonts.h \
- ../Core/Inc/keyboard.h
+ ../Core/Inc/keyboard.h ../Core/Inc/accelerometer.h
 
 ../Core/Inc/main.h:
 
@@ -157,3 +157,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/fonts.h:
 
 ../Core/Inc/keyboard.h:
+
+../Core/Inc/accelerometer.h:

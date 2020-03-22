@@ -37,7 +37,9 @@ Core/Src/stm32f1xx_it.o: ../Core/Src/stm32f1xx_it.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
- ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 
 ../Core/Inc/main.h:
 
@@ -118,3 +120,7 @@ Core/Src/stm32f1xx_it.o: ../Core/Src/stm32f1xx_it.c ../Core/Inc/main.h \
 ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:

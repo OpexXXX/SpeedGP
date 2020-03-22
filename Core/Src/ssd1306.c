@@ -21,7 +21,9 @@ static SSD1306_t SSD1306;
 //
 static void ssd1306_WriteCommand(uint8_t command)
 {
+
 	HAL_I2C_Mem_Write(&hi2c1,SSD1306_I2C_ADDR,0x00,1,&command,1,10);
+
 }
 
 
@@ -105,6 +107,7 @@ void ssd1306_UpdateScreen(void)
 		ssd1306_WriteCommand(0x10);
 
 		HAL_I2C_Mem_Write(&hi2c1,SSD1306_I2C_ADDR,0x40,1,&SSD1306_Buffer[SSD1306_WIDTH * i],SSD1306_WIDTH,100);
+
 	}
 }
 
