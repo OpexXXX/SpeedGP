@@ -148,11 +148,11 @@ int main(void)
 
 	defaultTask.start(StartDefaultTask);
 
-	buzzerTask.start(StartBuzzerTask);//Handle = osThreadNew(StartBuzzerTask, NULL, &buzzerTask_attributes);
-	keyboardTask.start(StartKeyboardTask);//Handle = osThreadNew(StartKeyboardTask, NULL, &keyboardTask_attributes);
-	dysplayTask.start(StartDysplayTask);//Handle = osThreadNew(StartDysplayTask, NULL, &dysplayTask_attributes);
-	accelTask.start(StartAccelTask);//Handle = osThreadNew(StartAccelTask, NULL, &accelTask_attributes);
-	gpsNMEA_ParserT.start(StartgpsNMEA_ParserTask);//Handle.s = osThreadNew(StartgpsNMEA_ParserTask, NULL, &gpsNMEA_ParserT_attributes);
+	buzzerTask.start(StartBuzzerTask);				//Handle = osThreadNew(StartBuzzerTask, NULL, &buzzerTask_attributes);
+	keyboardTask.start(StartKeyboardTask);			//Handle = osThreadNew(StartKeyboardTask, NULL, &keyboardTask_attributes);
+	dysplayTask.start(StartDysplayTask);			//Handle = osThreadNew(StartDysplayTask, NULL, &dysplayTask_attributes);
+	accelTask.start(StartAccelTask);				//Handle = osThreadNew(StartAccelTask, NULL, &accelTask_attributes);
+	gpsNMEA_ParserT.start(StartgpsNMEA_ParserTask);	//Handle = osThreadNew(StartgpsNMEA_ParserTask, NULL, &gpsNMEA_ParserT_attributes);
 	sdCardTask.start(StartSDcardTask);
 
 	/* Start scheduler */
