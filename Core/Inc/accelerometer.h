@@ -68,7 +68,7 @@ extern "C" {
  */
 
 #include "stm32f1xx_hal.h"
-#include "cmsis_os.h"
+//#include "cmsis_os.h"
 
 /**
  * @defgroup TM_LIB_Macros
@@ -95,8 +95,8 @@ extern "C" {
  * @{
  */
 
-extern I2C_HandleTypeDef hi2c1;
-extern osSemaphoreId_t I2C_BinarySemHandle;
+
+
 
 
 typedef enum _IIC_Result {
@@ -159,7 +159,7 @@ typedef struct _TM_MPU9250_t {
  * @{
  */
 
-TM_MPU9250_Result_t MPU9250_Init(TM_MPU9250_t* MPU9250, TM_MPU9250_Device_t dev);
+TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250, TM_MPU9250_Device_t dev);
 
 TM_MPU9250_Result_t TM_MPU9250_ReadAcce(TM_MPU9250_t* MPU9250);
 TM_MPU9250_Result_t TM_MPU9250_ReadGyro(TM_MPU9250_t* MPU9250);

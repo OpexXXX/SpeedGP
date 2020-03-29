@@ -160,7 +160,7 @@
 #define YA_OFFSET_L         0x7B
 #define ZA_OFFSET_H         0x7D
 #define ZA_OFFSET_L         0x7E
-
+I2C_HandleTypeDef* ihandle;
 IIC_Result I2C_Write(uint8_t device_address, uint8_t register_address, uint8_t data) {
 
 
@@ -170,9 +170,9 @@ IIC_Result I2C_Write(uint8_t device_address, uint8_t register_address, uint8_t d
 	d[1] = data;
 
 	/* Try to transmit via I2C */
-	if (HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)device_address, (uint8_t *)d, 2, 1000) != HAL_OK) {
+	if (HAL_I2C_Master_Transmit(ihandle, (uint16_t)device_address, (uint8_t *)d, 2, 1000) != HAL_OK) {
 		/* Check error */
-		if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF) {
+		if (HAL_I2C_GetError(ihandle) != HAL_I2C_ERROR_AF) {
 
 		}
 
@@ -189,18 +189,18 @@ IIC_Result I2C_Write(uint8_t device_address, uint8_t register_address, uint8_t d
 IIC_Result I2C_ReadMulti(uint8_t device_address, uint8_t register_address, uint8_t* data, uint16_t count) {
 
 	/* Send register address */
-	if (HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)device_address, &register_address, 1, 1000) != HAL_OK) {
+	if (HAL_I2C_Master_Transmit(ihandle, (uint16_t)device_address, &register_address, 1, 1000) != HAL_OK) {
 		/* Check error */
-		if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF) {
+		if (HAL_I2C_GetError(ihandle) != HAL_I2C_ERROR_AF) {
 		}
 		/* Return error */
 
 		return IIC_Result_Error;
 	}
 	/* Receive multiple byte */
-	if (HAL_I2C_Master_Receive(&hi2c1, device_address, data, count, 1000) != HAL_OK) {
+	if (HAL_I2C_Master_Receive(ihandle, device_address, data, count, 1000) != HAL_OK) {
 		/* Check error */
-		if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF) {
+		if (HAL_I2C_GetError(ihandle) != HAL_I2C_ERROR_AF) {
 		}
 
 		/* Return error */
@@ -216,9 +216,9 @@ IIC_Result I2C_Read(uint8_t device_address, uint8_t register_address, uint8_t* d
 
 	/* Send address */
 
-	if (HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)device_address, &register_address, 1, 1000) != HAL_OK) {
+	if (HAL_I2C_Master_Transmit(ihandle, (uint16_t)device_address, &register_address, 1, 1000) != HAL_OK) {
 		/* Check error */
-		if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF) {
+		if (HAL_I2C_GetError(ihandle) != HAL_I2C_ERROR_AF) {
 
 		}
 
@@ -228,9 +228,9 @@ IIC_Result I2C_Read(uint8_t device_address, uint8_t register_address, uint8_t* d
 	}
 
 	/* Receive multiple byte */
-	if (HAL_I2C_Master_Receive(&hi2c1, device_address, data, 1, 1000) != HAL_OK) {
+	if (HAL_I2C_Master_Receive(ihandle, device_address, data, 1, 1000) != HAL_OK) {
 		/* Check error */
-		if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF) {
+		if (HAL_I2C_GetError(ihandle) != HAL_I2C_ERROR_AF) {
 
 		}
 
@@ -247,7 +247,7 @@ IIC_Result I2C_Read(uint8_t device_address, uint8_t register_address, uint8_t* d
 IIC_Result I2C_IsDeviceConnected(uint8_t device_address) {
 
 	/* Check if device is ready for communication */
-	if (HAL_I2C_IsDeviceReady(&hi2c1, device_address, 2, 5) != HAL_OK) {
+	if (HAL_I2C_IsDeviceReady(ihandle, device_address, 2, 5) != HAL_OK) {
 		/* Return error */
 
 		return IIC_Result_Error;
@@ -258,7 +258,8 @@ IIC_Result I2C_IsDeviceConnected(uint8_t device_address) {
 	return IIC_Result_Ok;
 }
 
-TM_MPU9250_Result_t MPU9250_Init(TM_MPU9250_t* MPU9250, TM_MPU9250_Device_t dev) {
+TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250, TM_MPU9250_Device_t dev) {
+	ihandle = handle;
 	 uint8_t data;
 
 	    /* Set values */
@@ -372,6 +373,7 @@ TM_MPU9250_Result_t TM_MPU9250_ReadAcce(TM_MPU9250_t* MPU9250) {
 	MPU9250->Ax = (float)MPU9250->Ax_Raw * MPU9250->AMult;
 	MPU9250->Ay = (float)MPU9250->Ay_Raw * MPU9250->AMult;
 	MPU9250->Az = (float)MPU9250->Az_Raw * MPU9250->AMult;
+	  return TM_MPU9250_Result_Ok;
 }
 
 TM_MPU9250_Result_t TM_MPU9250_ReadGyro(TM_MPU9250_t* MPU9250) {
@@ -385,6 +387,7 @@ TM_MPU9250_Result_t TM_MPU9250_ReadGyro(TM_MPU9250_t* MPU9250) {
 	MPU9250->Gx = (float)MPU9250->Gx_Raw * MPU9250->GMult;
 	MPU9250->Gy = (float)MPU9250->Gy_Raw * MPU9250->GMult;
 	MPU9250->Gz = (float)MPU9250->Gz_Raw * MPU9250->GMult;
+	  return TM_MPU9250_Result_Ok;
 }
 
 TM_MPU9250_Result_t TM_MPU9250_ReadMag(TM_MPU9250_t* MPU9250) {
@@ -402,6 +405,7 @@ TM_MPU9250_Result_t TM_MPU9250_ReadMag(TM_MPU9250_t* MPU9250) {
 			MPU9250->Mz_Raw = ((int16_t)data[5] << 8) | data[4];
 		}
 	}
+	  return TM_MPU9250_Result_Ok;
 }
 
 TM_MPU9250_Result_t TM_MPU9250_DataReady(TM_MPU9250_t* MPU9250) {

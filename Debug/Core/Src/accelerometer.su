@@ -1,9 +1,9 @@
-accelerometer.c:164:12:I2C_Write	24	static
-accelerometer.c:189:12:I2C_ReadMulti	40	static
-accelerometer.c:215:12:I2C_Read	32	static
-accelerometer.c:247:12:I2C_IsDeviceConnected	8	static
-accelerometer.c:261:21:MPU9250_Init	24	static
-accelerometer.c:362:21:TM_MPU9250_ReadAcce	32	static
-accelerometer.c:377:21:TM_MPU9250_ReadGyro	32	static
-accelerometer.c:390:21:TM_MPU9250_ReadMag	24	static
-accelerometer.c:407:21:TM_MPU9250_DataReady	16	static
+accelerometer.cpp:164:12:IIC_Result I2C_Write(uint8_t, uint8_t, uint8_t)	24	static
+accelerometer.cpp:189:12:IIC_Result I2C_ReadMulti(uint8_t, uint8_t, uint8_t*, uint16_t)	40	static
+accelerometer.cpp:215:12:IIC_Result I2C_Read(uint8_t, uint8_t, uint8_t*)	40	static
+accelerometer.cpp:247:12:IIC_Result I2C_IsDeviceConnected(uint8_t)	8	static
+accelerometer.cpp:261:21:TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef*, TM_MPU9250_t*, TM_MPU9250_Device_t)	24	static
+accelerometer.cpp:363:21:TM_MPU9250_Result_t TM_MPU9250_ReadAcce(TM_MPU9250_t*)	32	static
+accelerometer.cpp:379:21:TM_MPU9250_Result_t TM_MPU9250_ReadGyro(TM_MPU9250_t*)	32	static
+accelerometer.cpp:393:21:TM_MPU9250_Result_t TM_MPU9250_ReadMag(TM_MPU9250_t*)	24	static
+accelerometer.cpp:411:21:TM_MPU9250_Result_t TM_MPU9250_DataReady(TM_MPU9250_t*)	16	static

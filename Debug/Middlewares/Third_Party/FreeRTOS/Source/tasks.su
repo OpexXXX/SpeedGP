@@ -1,6 +1,7 @@
 tasks.c:1021:13:prvAddNewTaskToReadyList	24	static,ignoring_inline_asm
 tasks.c:3670:14:prvDeleteTCB	8	static,ignoring_inline_asm
 tasks.c:3218:8:prvIdleTask	8	static,ignoring_inline_asm
+tasks.c:4127:15:prvWriteNameToBuffer	8	static
 tasks.c:1725:20:prvTaskIsTaskSuspended	0	static,ignoring_inline_asm
 tasks.c:3724:13:prvResetNextTaskUnblockTime	0	static
 tasks.c:817:13:prvInitialiseNewTask.isra.2	32	static
@@ -25,7 +26,7 @@ tasks.c:2583:12:xTaskIncrementTick	40	static,ignoring_inline_asm
 tasks.c:2099:12:xTaskResumeAll	24	static,ignoring_inline_asm
 tasks.c:1198:7:vTaskDelayUntil	8	static,ignoring_inline_asm
 tasks.c:1282:7:vTaskDelay	8	static,ignoring_inline_asm
-tasks.c:2845:6:vTaskSwitchContext	20	static,ignoring_inline_asm
+tasks.c:2845:6:vTaskSwitchContext	24	static,ignoring_inline_asm
 tasks.c:1624:7:vTaskSuspend	16	static,ignoring_inline_asm
 tasks.c:2904:6:vTaskPlaceOnEventList	8	static,ignoring_inline_asm
 tasks.c:2921:6:vTaskPlaceOnUnorderedEventList	8	static,ignoring_inline_asm
@@ -47,6 +48,8 @@ tasks.c:3767:13:xTaskGetSchedulerState	0	static
 tasks.c:3795:13:xTaskPriorityInherit	24	static
 tasks.c:3882:13:xTaskPriorityDisinherit	16	static,ignoring_inline_asm
 tasks.c:3962:7:vTaskPriorityDisinheritAfterTimeout	16	static,ignoring_inline_asm
+tasks.c:4153:7:vTaskList	48	static
+tasks.c:4251:7:vTaskGetRunTimeStats	48	static
 tasks.c:4376:12:uxTaskResetEventItemValue	0	static
 tasks.c:4392:8:pvTaskIncrementMutexHeldCount	0	static
 tasks.c:4409:11:ulTaskNotifyTake	16	static,ignoring_inline_asm

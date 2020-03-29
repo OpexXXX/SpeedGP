@@ -1,4 +1,4 @@
-Core/Src/fonts.o: ../Core/Src/fonts.c ../Core/Inc/fonts.h \
+Core/Src/fonts.o: ../Core/Src/fonts.cpp ../Core/Inc/fonts.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \

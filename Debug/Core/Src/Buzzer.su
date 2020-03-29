@@ -1,2 +1,2 @@
-Buzzer.c:13:6:BuzzerSetFreq	0	static
-Buzzer.c:20:6:BuzzerSetVolume	0	static
+Buzzer.cpp:13:6:void BuzzerSetFreq(uint16_t)	0	static
+Buzzer.cpp:20:6:void BuzzerSetVolume(uint16_t)	0	static
