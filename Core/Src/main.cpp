@@ -1,13 +1,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-//#include "cmsis_os.h"
-
-
-
-/* Private includes ----------------------------------------------------------*/
-//#include <stdio.h>
-
 #include "Buzzer.h"
 #include "ssd1306.h"
 #include "fonts.h"
@@ -15,11 +8,12 @@
 #include "accelerometer.h"
 #include "helper.h"
 #include "nmea_parser.h"
-#include <stdio.h>
-#include <string.h>
-#include "cmsis_os.h"
 #include "sd.h"
+
 #include "ff.h"
+#include "cmsis_os.h"
+#include <string.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,22 +27,18 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
-osTask<64> defaultTask("defaultTask");
-osTask<64> buzzerTask("buzzerTask");
-osTask<128> keyboardTask("keyboardTask");
-osTask<196> dysplayTask("dysplayTask");
-osTask<64> accelTask("accelTask");
-osTask<256> gpsNMEA_ParserT("gpsNMEA_ParserT");
-osTask<256> sdCardTask("sdCardTask",osPriorityAboveNormal3);
+osTask defaultTask("defaultTask",64);
+osTask buzzerTask("buzzerTask",64);
+osTask keyboardTask("keyboardTask",70);
+osTask dysplayTask("dysplayTask",140);
+osTask accelTask("accelTask",64);
+osTask gpsNMEA_ParserT("gpsNMEA_ParserT",200);
+osTask sdCardTask("sdCardTask",1024,osPriorityAboveNormal3);
 
-
-osQueue<buzzerStruct,2>  buzzerQueueHandle("buzzerQueue");
-
-osQueue<uint16_t,16> dysplayQueueHandle("dysplayQueue");
-osQueue<buttonStruct,1> keyboardQueueHandle("keyboardQueue");
-osQueue<uint8_t,64>  GPS_UARTQueueHandle("GPS_UARTQueue");
-
-
+osQueue<buzzerStruct> buzzerQueueHandle(2,"buzzerQueue");
+osQueue<uint16_t> dysplayQueueHandle(16,"dysplayQueue");
+osQueue<Keyboard::buttonEventStruct> keyboardQueueHandle(1,"keyboardQueue");
+osQueue<uint8_t> GPS_UARTQueueHandle(64,"GPS_UARTQueue");
 
 /* Definitions for I2C_BinarySem */
 osSemaphoreId_t I2C_BinarySemHandle;
@@ -56,13 +46,10 @@ const osSemaphoreAttr_t I2C_BinarySem_attributes = {
 		.name = "I2C_BinarySem"
 };
 /* Definitions for accelStructBinarySem */
-
-
 osSemaphoreId_t accelStructBinarySemHandle;
 const osSemaphoreAttr_t accelStructBinarySem_attributes = {
 		.name = "accelStructBinarySem"
 };
-
 osSemaphoreId_t debugUARTBinarySemHandle;
 const osSemaphoreAttr_t  debugUARTBinarySem_attributes = {
 		.name = " debugUARTBinarySem"
@@ -71,8 +58,6 @@ const osSemaphoreAttr_t  debugUARTBinarySem_attributes = {
 
 TM_MPU9250_t accelStruct;
 uint8_t receiveBuffer[32];
-//NMEA_UART::Parser *gpsParser = new NMEA_UART::Parser();
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -90,18 +75,12 @@ void StartAccelTask(void *argument);
 void StartgpsNMEA_ParserTask(void *argument);
 void StartSDcardTask(void *argument);
 void StartDebugUARTTask(void *argument);
-void debugMSG(const char* msg, bool withTime=true, bool newLine=true);
 void UART_Printf(const char* fmt, ...);
-
 
 void init() {
     FATFS fs;
     FRESULT res;
     UART_Printf("Ready!\r\n");
-    BYTE work[FF_MAX_SS];
-
-
-
 
     // mount the default drive
     res = f_mount(&fs, "", 0);
@@ -109,9 +88,7 @@ void init() {
         UART_Printf("f_mount() failed, res = %d\r\n", res);
         return;
     }
-
     UART_Printf("f_mount() done!\r\n");
-
     uint32_t freeClust;
     FATFS* fs_ptr = &fs;
     // Warning! This fills fs.n_fatent and fs.csize!
@@ -122,10 +99,8 @@ void init() {
     }
 
     UART_Printf("f_getfree() done!\r\n");
-
     uint32_t totalBlocks = (fs.n_fatent - 2) * fs.csize;
     uint32_t freeBlocks = freeClust * fs.csize;
-
     switch (fs.fs_type) {//(0, FS_FAT12, FS_FAT16, FS_FAT32 or FS_EXFAT) */
 		case 1:
 			 UART_Printf("FAT12\r\n");
@@ -143,13 +118,10 @@ void init() {
 			break;
 	}
 
-
-
     UART_Printf("Total blocks: %lu (%lu Mb)\r\n",
                 totalBlocks, totalBlocks / 2000);
     UART_Printf("Free blocks: %lu (%lu Mb)\r\n",
                 freeBlocks, freeBlocks / 2000);
-
 
     DIR dir;
     res = f_opendir(&dir, "/");
@@ -281,7 +253,7 @@ int main(void)
 	HAL_Delay(50);
 	ssd1306_UpdateScreen();
 	HAL_Delay(50);
-	TM_MPU9250_Result_t resultt =  MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
+	MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
 
 	//USART1->CR1 |= USART_CR1_TCIE; /*//прерывание по окончанию передачи*/
 	USART1->CR1 |= USART_CR1_RXNEIE; /*//прерывание по приему данных*/
@@ -289,7 +261,7 @@ int main(void)
 
     sd_ini();
    // init();
-   init();
+
 
 	/* Init scheduler */
 	osKernelInitialize();
@@ -303,21 +275,16 @@ int main(void)
 	keyboardQueueHandle.createQueue();
 	GPS_UARTQueueHandle.createQueue();
 
-
 	/* creation of defaultTask */
-
 	defaultTask.start(StartDefaultTask);
-
 	buzzerTask.start(StartBuzzerTask);				//Handle = osThreadNew(StartBuzzerTask, NULL, &buzzerTask_attributes);
 	keyboardTask.start(StartKeyboardTask);			//Handle = osThreadNew(StartKeyboardTask, NULL, &keyboardTask_attributes);
 	dysplayTask.start(StartDysplayTask);			//Handle = osThreadNew(StartDysplayTask, NULL, &dysplayTask_attributes);
 	accelTask.start(StartAccelTask);				//Handle = osThreadNew(StartAccelTask, NULL, &accelTask_attributes);
 	gpsNMEA_ParserT.start(StartgpsNMEA_ParserTask);	//Handle = osThreadNew(StartgpsNMEA_ParserTask, NULL, &gpsNMEA_ParserT_attributes);
 	sdCardTask.start(StartSDcardTask);
-
 	/* Start scheduler */
 	osKernelStart();
-
 	while (1)
 	{
 
@@ -333,34 +300,11 @@ void UART_Printf(const char* fmt, ...) {
                       HAL_MAX_DELAY);
     va_end(args);
 }
-void debugMSG(const char* msg, bool withTime, bool newLine)
-{
-	int tick = osKernelGetTickCount();
-	char tickLine[24];
-	char newline[] = "\r\n";
-	char dot = ':';
-	sprintf(tickLine, "%d", tick);
 
-
-	osSemaphoreAcquire(debugUARTBinarySemHandle,osWaitForever);
-
-	if(withTime){
-		HAL_UART_Transmit(&huart3,(uint8_t*)tickLine , strlen(tickLine), 10U);
-		HAL_UART_Transmit(&huart3,(uint8_t*)&dot , 1, 10U);
-	}
-
-	HAL_UART_Transmit(&huart3,(uint8_t*)msg , strlen(msg), 10U);
-
-	if (newLine) HAL_UART_Transmit(&huart3, (uint8_t *) newline, 2, 10);
-	osSemaphoreRelease(debugUARTBinarySemHandle);
-
-}
 
 void StartSDcardTask(void *argument)
 {
-
-
-
+	   init();
 	for(;;)
 	{
 		osDelay(20);
@@ -372,62 +316,14 @@ void StartSDcardTask(void *argument)
 
 void StartDefaultTask(void *argument)
 {
-	/* init code for USB_DEVICE */
-
-	/* USER CODE BEGIN 5 */
-	osStatus_t keyStatus;
-	buttonStruct buttonEvent;
-
-
-	/* Infinite loop */
 	for(;;)
 	{
-		keyStatus =keyboardQueueHandle.receive(&buttonEvent);// osMessageQueueGet(keyboardQueueHandle, &buttonEvent, NULL, 1U);   // wait for message
-		if (keyStatus == osOK) {
-			ssd1306_SetCursor(2,23);
-			switch (buttonEvent.buttonNumber) {
-			case 1:
-				ssd1306_WriteString("1",Font_11x18,White);
-
-				break;
-			case 2:
-				ssd1306_WriteString("2",Font_11x18,White);
-				break;
-			case 3:
-				ssd1306_WriteString("3",Font_11x18,White);
-				break;
-			default:
-				break;
-			}
-
-			ssd1306_WriteString(" ",Font_11x18,White);
-
-			switch (buttonEvent.state) {
-			case BUTTON_SHORT_PRESSED:
-				ssd1306_WriteString("PRESS",Font_11x18,White);
-				break;
-			case BUTTON_RELEASED:
-				ssd1306_WriteString("RELEAS",Font_11x18,White);
-				break;
-			default:
-				break;
-			}
-
-		}
-
 		osDelay(20);
-
-
 	}
-
 }
 
-
-/* USER CODE END Header_StartBuzzerTask */
 void StartBuzzerTask(void *argument)
 {
-	/* USER CODE BEGIN StartBuzzerTask */
-	/* Infinite loop */
 	buzzerStruct buzzerParameters;
 	osStatus_t status;
 	for(;;)
@@ -440,109 +336,17 @@ void StartBuzzerTask(void *argument)
 			BuzzerSetVolume(0);
 		}
 	}
-	/* USER CODE END StartBuzzerTask */
 }
 
 void StartKeyboardTask(void *argument)
 {
-	/* USER CODE BEGIN StartKeyboardTask */
-	buzzerStruct buzzerPress;
-	buzzerPress.duration=5;
-	buzzerPress.freq=3000;
-	buzzerPress.volume=BUZZER_VOLUME_MAX;
-	buzzerStruct buzzerRELESE;
-	buzzerRELESE.duration=5;
-	buzzerRELESE.freq=3500;
-	buzzerRELESE.volume=BUZZER_VOLUME_MAX;
-	buttonStruct buttonEvent;
-	uint8_t button_one_flag=1;
-	uint8_t button_two_flag=1;
-	uint8_t button_three_flag=1;
-	/* Infinite loop */
+	Keyboard::Hadler KeyboardHadler = Keyboard::Hadler(&keyboardQueueHandle,&buzzerQueueHandle);
 	for(;;)
 	{
-		//
-		if(HAL_GPIO_ReadPin(BTN_1_GPIO_Port, BTN_1_Pin) == GPIO_PIN_RESET && button_one_flag)
-		{
-			button_one_flag=0;
-			buzzerQueueHandle.send(buzzerPress);
-			buttonEvent.buttonNumber=1;
-			buttonEvent.state = BUTTON_SHORT_PRESSED;
-
-
-			keyboardQueueHandle.send(buttonEvent);//osMessageQueuePut(keyboardQueueHandle, &buttonEvent, 0U, 0U);
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_1_GPIO_Port, BTN_1_Pin) == GPIO_PIN_SET && (!button_one_flag))
-		{
-			buzzerQueueHandle.send(buzzerRELESE);
-			buttonEvent.buttonNumber=1;
-			buttonEvent.state = BUTTON_RELEASED;
-			keyboardQueueHandle.send(buttonEvent);
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_1_GPIO_Port, BTN_1_Pin) == GPIO_PIN_SET)
-		{
-			button_one_flag=1;
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_2_GPIO_Port, BTN_2_Pin) == GPIO_PIN_RESET && button_two_flag)
-		{
-			button_two_flag=0;
-			buzzerQueueHandle.send(buzzerPress);
-			buttonEvent.buttonNumber=2;
-			buttonEvent.state = BUTTON_SHORT_PRESSED;
-			keyboardQueueHandle.send(buttonEvent);
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_2_GPIO_Port, BTN_2_Pin) == GPIO_PIN_SET && (!button_two_flag))
-		{
-			buzzerQueueHandle.send(buzzerRELESE);
-			buttonEvent.buttonNumber=2;
-			buttonEvent.state = BUTTON_RELEASED;
-			keyboardQueueHandle.send(buttonEvent);
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_2_GPIO_Port, BTN_2_Pin) == GPIO_PIN_SET)
-		{
-			button_two_flag=1;
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_3_GPIO_Port, BTN_3_Pin) == GPIO_PIN_RESET && button_three_flag)
-		{
-			button_three_flag=0;
-			buzzerQueueHandle.send(buzzerPress);
-
-			buttonEvent.buttonNumber=3;
-			buttonEvent.state = BUTTON_SHORT_PRESSED;
-			keyboardQueueHandle.send(buttonEvent);
-		}
-
-		if(HAL_GPIO_ReadPin(BTN_3_GPIO_Port, BTN_3_Pin) == GPIO_PIN_SET && (!button_three_flag))
-		{
-
-			buzzerQueueHandle.send(buzzerRELESE);
-
-			buttonEvent.buttonNumber=3;
-			buttonEvent.state = BUTTON_RELEASED;
-			keyboardQueueHandle.send(buttonEvent);
-		}
-
-
-		if(HAL_GPIO_ReadPin(BTN_3_GPIO_Port, BTN_3_Pin) == GPIO_PIN_SET)
-		{
-			button_three_flag=1;
-		}
-
-		//HAL_GPIO_ReadPin(BTN1_PORT, BTN1_PIN) == GPIO_PIN_RESET;
-		//HAL_GPIO_ReadPin(BTN2_PORT, BTN2_PIN) == GPIO_PIN_RESET;
-		//HAL_GPIO_ReadPin(BTN3_PORT, BTN3_PIN) == GPIO_PIN_RESET;
-
-
+		KeyboardHadler.checkKeyboard();
 
 		osDelay(5);
 	}
-	/* USER CODE END StartKeyboardTask */
 }
 
 /* USER CODE END Header_StartDysplayTask */
@@ -661,6 +465,7 @@ void StartAccelTask(void *argument)
 		osDelay(1);
 		TM_MPU9250_ReadMag(&accelStruct);
 		osDelay(1);
+
 		osSemaphoreRelease(accelStructBinarySemHandle);
 		osDelay(2);
 	}

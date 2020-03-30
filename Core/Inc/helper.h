@@ -9,18 +9,15 @@
 #define SRC_QUEUE_H_
 #include "cmsis_os.h"
 
-template<class T, size_t size>
+template<class T>
 class osQueue
 {
-	osMessageQueueId_t xHandle;
-	uint8_t xQueueBuffer[size * sizeof( T ) ];
-	StaticQueue_t xQueueControlBlock;
-	const char *NameQ;
+
 
 public:
-	osQueue(const char *name):NameQ(name)
+	osQueue(uint16_t count,const char *name):NameQ(name),queueSize(count)
 {
-
+		//xQueueBuffer = new uint8_t[queueSize * sizeof( T )];
 }
 
 	void createQueue()
@@ -28,12 +25,12 @@ public:
 		const osMessageQueueAttr_t attributes = {
 				name : NameQ,
 				attr_bits : NULL,
-				cb_mem : &xQueueControlBlock,
-				cb_size :sizeof(xQueueControlBlock),
-				mq_mem : &xQueueBuffer,
-				mq_size : sizeof(xQueueBuffer)
+				cb_mem : NULL,//,/&xQueueControlBlock,
+				cb_size :NULL,//sizeof(xQueueControlBlock),
+				mq_mem :NULL,// &xQueueBuffer,
+				mq_size :NULL// sizeof(xQueueBuffer)
 		};
-		xHandle=osMessageQueueNew (size, sizeof(T), &attributes);
+		xHandle=osMessageQueueNew (queueSize, sizeof(T), &attributes);
 	}
 	osStatus_t receive(T * val, TickType_t xTicksToWait = osWaitForever)
 	{
@@ -44,21 +41,29 @@ public:
 	{
 		return osMessageQueuePut(xHandle, &val, NULL, xTicksToWait);
 	}
+
+	osMessageQueueId_t xHandle;
+		const uint16_t queueSize;
+		//uint8_t *xQueueBuffer;
+		//StaticQueue_t xQueueControlBlock;
+		const char *NameQ;
 };
 // Definitions for defaultTask
 
 
-template<size_t size>
+
+
+
 class osTask
 {
 	osThreadId_t TaskHandle;
-	uint32_t TaskBuffer[ size ];
-	StaticTask_t TaskControlBlock;
+	//uint32_t TaskBuffer[ size ];
+	//StaticTask_t TaskControlBlock;
 	osPriority_t priority;
 	const char *NameQ;
-
+	const  uint16_t stack_size;
 public:
-	osTask(const char *name,osPriority_t osPriority=osPriorityNormal ):NameQ(name)
+	osTask(const char *name,uint16_t stack,osPriority_t osPriority=osPriorityNormal ):NameQ(name),stack_size(stack)
 {
 		priority=osPriority;
 }
@@ -68,11 +73,11 @@ public:
 	{
 		const osThreadAttr_t Task_attributes = {
 				name:NameQ,
-				attr_bits:NULL,
-				cb_mem : &TaskControlBlock,
-				cb_size : sizeof(TaskControlBlock),
-				stack_mem : &TaskBuffer[0],
-				stack_size: sizeof(TaskBuffer),
+				attr_bits:NULL,//
+				cb_mem :NULL,// &TaskControlBlock,
+				cb_size :NULL,// sizeof(TaskControlBlock),
+				stack_mem :NULL,// &TaskBuffer[0],
+				stack_size: stack_size*4,
 				priority : (osPriority_t) priority,
 				tz_module : NULL,
 				reserved:NULL

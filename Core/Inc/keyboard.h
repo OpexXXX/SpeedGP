@@ -8,26 +8,118 @@
 #ifndef INC_KEYBOARD_H_
 #define INC_KEYBOARD_H_
 
-#define BTN1_PIN		GPIOB
-#define BTN1_PORT		GPIO_PIN_5
-#define BTN2_PIN		GPIOB
-#define BTN2_PORT		GPIO_PIN_4
-#define BTN3_PIN		GPIOB
-#define BTN3_PORT		GPIO_PIN_3
+#include "cmsis_os.h"
+#include "main.h"
+#include "stm32f1xx.h"
+#include "Buzzer.h"
+#include "helper.h"
+
+#define LONG_PRESS_TIME 500
+#define BTN_COUNT       3
 
 
+#define	BUTTON_LONG_PRESSED_BUZZER_FREQ   		4000
+#define	BUTTON_LONG_RELEASED_BUZZER_FREQ 		4500
+#define	BUTTON_SHORT_PRESSED_BUZZER_FREQ 		3000
+#define BUTTON_SHORT_RELEASED_BUZZER_FREQ 		3500
 
+#define	BUTTON_LONG_PRESSED_BUZZER_DURATION		20
+#define	BUTTON_LONG_RELEASED_BUZZER_DURATION	20
+#define	BUTTON_SHORT_PRESSED_BUZZER_DURATION	5
+#define BUTTON_SHORT_RELEASED_BUZZER_DURATION	5
+
+namespace Keyboard{
 typedef enum
 {
-	BUTTON_RELEASED = 0,
+	BUTTON_POLL = 0,
+	BUTTON_LONG_PRESSED,
+	BUTTON_LONG_RELEASED,
 	BUTTON_SHORT_PRESSED,
-	BUTTON_LONG_PRESSED
+	BUTTON_SHORT_RELEASED
 } ButtonState;
 
 typedef struct  {
 	uint8_t buttonNumber;
 	ButtonState state;
-} buttonStruct;
+} buttonEventStruct;
 
 
+const buzzerStruct defShortPressBuzzer = {
+		freq:BUTTON_SHORT_PRESSED_BUZZER_FREQ,
+		duration:BUTTON_SHORT_PRESSED_BUZZER_DURATION,
+		volume:BUZZER_VOLUME_MAX
+};
+const buzzerStruct defLongPressBuzzer = {
+		freq:BUTTON_LONG_PRESSED_BUZZER_FREQ,
+		duration:BUTTON_LONG_PRESSED_BUZZER_DURATION,
+		volume:BUZZER_VOLUME_MAX
+};
+const buzzerStruct defLongReleeseBuzzer = {
+		freq:BUTTON_LONG_RELEASED_BUZZER_FREQ,
+		duration:BUTTON_LONG_RELEASED_BUZZER_DURATION,
+		volume:BUZZER_VOLUME_MAX
+};
+const buzzerStruct defShortReleeseBuzzer = {
+		freq:BUTTON_SHORT_RELEASED_BUZZER_FREQ,
+		duration:BUTTON_SHORT_RELEASED_BUZZER_DURATION,
+		volume:BUZZER_VOLUME_MAX
+};
+
+
+class Button {
+public:
+	Button(GPIO_TypeDef * btnPort,uint16_t btnPin,const char* label);
+	ButtonState getState();
+	buzzerStruct getBuzzer(ButtonState btnState);
+	void setShortPressBuzzer(buzzerStruct buzz){
+		shortPressBuzzer = buzz;
+	}
+	void setLongPressBuzzer(buzzerStruct buzz){
+		longPressBuzzer = buzz;
+	}
+	void setLongReleeseBuzzer(buzzerStruct buzz){
+		longReleeseBuzzer = buzz;
+	}
+	void setShortReleeseBuzzer(buzzerStruct buzz){
+		shortReleeseBuzzer = buzz;
+	}
+
+private:
+	ButtonState btnState=BUTTON_POLL;
+	bool readPin();
+	bool checkLongpress();
+	void btnShortPressed();
+	void btnShortReleased();
+	void btnLongPressed();
+	void btnLongReleased();
+	void setDefaultBuzzer();
+
+	uint32_t start_press_timer=0;
+	GPIO_TypeDef * buttonPort;
+	uint16_t buttonPin;
+	const char* Label;
+	buzzerStruct shortPressBuzzer;
+	buzzerStruct longPressBuzzer;
+	buzzerStruct longReleeseBuzzer;
+	buzzerStruct shortReleeseBuzzer;
+};
+
+
+class Hadler
+{
+public:
+	Button buttons[BTN_COUNT] = {
+			Button(BTN_1_GPIO_Port,BTN_1_Pin,"BTN1"),
+			Button(BTN_2_GPIO_Port,BTN_2_Pin,"BTN2"),
+			Button(BTN_3_GPIO_Port,BTN_3_Pin,"BTN3")
+	};
+	Hadler(osQueue<buttonEventStruct> *  keyboardQueue,	osQueue<buzzerStruct> * buzzerQueue);
+	void checkKeyboard();
+private:
+	osQueue<buttonEventStruct> * keyboardQueue;
+	osQueue<buzzerStruct>* buzzerQueue;
+	//const osMessageQueueId_t* xHandle;
+};
+
+}
 #endif /* INC_KEYBOARD_H_ */

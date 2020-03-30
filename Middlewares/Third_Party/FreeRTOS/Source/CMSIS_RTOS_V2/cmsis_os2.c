@@ -396,8 +396,8 @@ osThreadId_t osThreadNew (osThreadFunc_t func, void *argument, const osThreadAtt
     }
 
     if (mem == 1) {
-      hTask = xTaskCreateStatic ((TaskFunction_t)func, name, stack, argument, prio, (StackType_t  *)attr->stack_mem,
-                                                                                    (StaticTask_t *)attr->cb_mem);
+     // hTask = xTaskCreateStatic ((TaskFunction_t)func, name, stack, argument, prio, (StackType_t  *)attr->stack_mem,
+    //                                                                                (StaticTask_t *)attr->cb_mem);
     }
     else {
       if (mem == 0) {
@@ -1395,7 +1395,7 @@ osSemaphoreId_t osSemaphoreNew (uint32_t max_count, uint32_t initial_count, cons
     if (mem != -1) {
       if (max_count == 1U) {
         if (mem == 1) {
-          hSemaphore = xSemaphoreCreateBinaryStatic ((StaticSemaphore_t *)attr->cb_mem);
+        //  hSemaphore = xSemaphoreCreateBinaryStatic ((StaticSemaphore_t *)attr->cb_mem);
         }
         else {
           hSemaphore = xSemaphoreCreateBinary();
@@ -1410,7 +1410,7 @@ osSemaphoreId_t osSemaphoreNew (uint32_t max_count, uint32_t initial_count, cons
       }
       else {
         if (mem == 1) {
-          hSemaphore = xSemaphoreCreateCountingStatic (max_count, initial_count, (StaticSemaphore_t *)attr->cb_mem);
+        //  hSemaphore = xSemaphoreCreateCountingStatic (max_count, initial_count, (StaticSemaphore_t *)attr->cb_mem);
         }
         else {
           hSemaphore = xSemaphoreCreateCounting (max_count, initial_count);
@@ -1571,7 +1571,7 @@ osMessageQueueId_t osMessageQueueNew (uint32_t msg_count, uint32_t msg_size, con
     }
 
     if (mem == 1) {
-      hQueue = xQueueCreateStatic (msg_count, msg_size, attr->mq_mem, attr->cb_mem);
+     // hQueue = xQueueCreateStatic (msg_count, msg_size, attr->mq_mem, attr->cb_mem);
     }
     else {
       if (mem == 0) {

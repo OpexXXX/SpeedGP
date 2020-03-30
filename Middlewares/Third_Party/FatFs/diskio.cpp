@@ -10,7 +10,8 @@
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 #include "sd.h"
-
+#include <stdio.h>
+#include <string.h>
 /* Definitions of physical drive number for each drive */
 #define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
 #define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
@@ -64,7 +65,10 @@ DRESULT disk_read (
 )
 {
 	/* USER CODE BEGIN READ */
-	//	HAL_UART_Transmit(&huart3,(uint8_t*)"USER_read\r\n",11,0x1000);
+#ifdef SD_DEBUG
+	sprintf(str1,"disk.cpp disk_read()  sector: %lu; count: %d\r\n",sector, count);
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
 
 	if (pdrv || !count) return RES_PARERR;
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
@@ -102,9 +106,10 @@ DRESULT disk_write (
 		UINT count			/* Number of sectors to write */
 )
 {
-	sprintf(str1,"W sector: %lu; count: %d\r\n",sector, count);
+#ifdef SD_DEBUG
+	sprintf(str1,"disk.cpp disk_write()  sector: %lu; count: %d\r\n",sector, count);
 	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
-
+#endif
 
 	if (pdrv || !count) return RES_PARERR;
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
@@ -140,11 +145,11 @@ DRESULT disk_ioctl (
 {
 
 	DRESULT res;
-	BYTE n, csd[16];
-	DWORD *dp, st, ed, csize;
-	sprintf(str1,"IO %d\r\n",cmd);
-	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
 
+#ifdef SD_DEBUG
+	sprintf(str1,"disk.cpp disk_ioctl()  CMD: %d\r\n",cmd);
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
 	if (pdrv) return RES_PARERR;
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
 	res = RES_ERROR;

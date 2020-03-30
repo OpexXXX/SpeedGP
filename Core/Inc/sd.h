@@ -2,12 +2,10 @@
 #define SD_H_
 //--------------------------------------------------
 #include "stm32f1xx_hal.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
 #include "main.h"
 //--------------------------------------------------
+//#define  SD_DEBUG
+//#define  SD_DEBUG_SHOW_READ
 
 #define SS_SD_SELECT() HAL_GPIO_WritePin(SD_SPI_CS_GPIO_Port, SD_SPI_CS_Pin, GPIO_PIN_RESET)
 #define SS_SD_DESELECT() HAL_GPIO_WritePin(SD_SPI_CS_GPIO_Port, SD_SPI_CS_Pin, GPIO_PIN_SET)
