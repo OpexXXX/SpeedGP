@@ -30,6 +30,7 @@ SUBDIRS := \
 Core/Src \
 Core/Src/Startup \
 Drivers/STM32F1xx_HAL_Driver/Src \
+Middlewares/Third_Party/FatFs \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
 Middlewares/Third_Party/FreeRTOS/Source \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 \

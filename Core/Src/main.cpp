@@ -18,9 +18,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "cmsis_os.h"
-
-
-
+#include "sd.h"
+#include "ff.h"
+#include <stdarg.h>
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
@@ -90,10 +90,169 @@ void StartAccelTask(void *argument);
 void StartgpsNMEA_ParserTask(void *argument);
 void StartSDcardTask(void *argument);
 void StartDebugUARTTask(void *argument);
-void debugMsg(const char* msg, bool withTime, bool newLine);
+void debugMSG(const char* msg, bool withTime=true, bool newLine=true);
+void UART_Printf(const char* fmt, ...);
+
+
+void init() {
+    FATFS fs;
+    FRESULT res;
+    UART_Printf("Ready!\r\n");
+    BYTE work[FF_MAX_SS];
 
 
 
+
+    // mount the default drive
+    res = f_mount(&fs, "", 0);
+    if(res != FR_OK) {
+        UART_Printf("f_mount() failed, res = %d\r\n", res);
+        return;
+    }
+
+    UART_Printf("f_mount() done!\r\n");
+
+    uint32_t freeClust;
+    FATFS* fs_ptr = &fs;
+    // Warning! This fills fs.n_fatent and fs.csize!
+    res = f_getfree("/", &freeClust, &fs_ptr);
+    if(res != FR_OK) {
+        UART_Printf("f_getfree() failed, res = %d\r\n", res);
+        return;
+    }
+
+    UART_Printf("f_getfree() done!\r\n");
+
+    uint32_t totalBlocks = (fs.n_fatent - 2) * fs.csize;
+    uint32_t freeBlocks = freeClust * fs.csize;
+
+    switch (fs.fs_type) {//(0, FS_FAT12, FS_FAT16, FS_FAT32 or FS_EXFAT) */
+		case 1:
+			 UART_Printf("FAT12\r\n");
+			break;
+		case 2:
+			  UART_Printf( "FAT16\r\n");
+					break;
+		case 3:
+			  UART_Printf( "FAT32\r\n");
+					break;
+		case 4:
+			  UART_Printf("EXFAT\r\n");
+					break;
+		default:
+			break;
+	}
+
+
+
+    UART_Printf("Total blocks: %lu (%lu Mb)\r\n",
+                totalBlocks, totalBlocks / 2000);
+    UART_Printf("Free blocks: %lu (%lu Mb)\r\n",
+                freeBlocks, freeBlocks / 2000);
+
+
+    DIR dir;
+    res = f_opendir(&dir, "/");
+    if(res != FR_OK) {
+        UART_Printf("f_opendir() failed, res = %d\r\n", res);
+        return;
+    }
+
+    FILINFO fileInfo;
+    uint32_t totalFiles = 0;
+    uint32_t totalDirs = 0;
+    UART_Printf("--------\r\nRoot directory:\r\n");
+    for(;;) {
+        res = f_readdir(&dir, &fileInfo);
+        if((res != FR_OK) || (fileInfo.fname[0] == '\0')) {
+            break;
+        }
+
+        if(fileInfo.fattrib & AM_DIR) {
+            UART_Printf("  DIR  %s\r\n", fileInfo.fname);
+            totalDirs++;
+        } else {
+            UART_Printf("  FILE %s\r\n", fileInfo.fname);
+            totalFiles++;
+        }
+    }
+
+    UART_Printf("(total: %lu dirs, %lu files)\r\n--------\r\n",
+                totalDirs, totalFiles);
+
+    res = f_closedir(&dir);
+    if(res != FR_OK) {
+        UART_Printf("f_closedir() failed, res = %d\r\n", res);
+        return;
+    }
+
+    UART_Printf("Writing to log1.txt...\r\n");
+
+    char writeBuff[128];
+    snprintf(writeBuff, sizeof(writeBuff),
+        "Total blocks: %lu (%lu Mb); Free blocks: %lu (%lu Mb)\r\n",
+        totalBlocks, totalBlocks / 2000,
+        freeBlocks, freeBlocks / 2000);
+
+    FIL logFile;
+    res = f_open(&logFile, "log1.txt", FA_OPEN_APPEND | FA_WRITE);
+    if(res != FR_OK) {
+        UART_Printf("f_open() failed, res = %d\r\n", res);
+        return;
+    }
+
+    unsigned int bytesToWrite = strlen(writeBuff);
+    unsigned int bytesWritten;
+    res = f_write(&logFile, writeBuff, bytesToWrite, &bytesWritten);
+    if(res != FR_OK) {
+        UART_Printf("f_write() failed, res = %d\r\n", res);
+        return;
+    }
+
+    if(bytesWritten < bytesToWrite) {
+        UART_Printf("WARNING! Disk is full.\r\n");
+    }
+
+    res = f_close(&logFile);
+    if(res != FR_OK) {
+        UART_Printf("f_close() failed, res = %d\r\n", res);
+        return;
+    }
+
+    UART_Printf("Reading file...\r\n");
+    FIL msgFile;
+    res = f_open(&msgFile, "log1.txt", FA_READ);
+    if(res != FR_OK) {
+        UART_Printf("f_open() failed, res = %d\r\n", res);
+        return;
+    }
+
+    char readBuff[128];
+    unsigned int bytesRead;
+    res = f_read(&msgFile, readBuff, sizeof(readBuff)-1, &bytesRead);
+    if(res != FR_OK) {
+        UART_Printf("f_read() failed, res = %d\r\n", res);
+        return;
+    }
+
+    readBuff[bytesRead] = '\0';
+    UART_Printf("```\r\n%s\r\n```\r\n", readBuff);
+
+    res = f_close(&msgFile);
+    if(res != FR_OK) {
+        UART_Printf("f_close() failed, res = %d\r\n", res);
+        return;
+    }
+
+    // Unmount
+    res = f_mount(NULL, "", 0);
+    if(res != FR_OK) {
+        UART_Printf("Unmount failed, res = %d\r\n", res);
+        return;
+    }
+
+    UART_Printf("Done!\r\n");
+}
 
 int main(void)
 {
@@ -122,14 +281,15 @@ int main(void)
 	HAL_Delay(50);
 	ssd1306_UpdateScreen();
 	HAL_Delay(50);
-	TM_MPU9250_Result_t res =  MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
+	TM_MPU9250_Result_t resultt =  MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
 
 	//USART1->CR1 |= USART_CR1_TCIE; /*//прерывание по окончанию передачи*/
 	USART1->CR1 |= USART_CR1_RXNEIE; /*//прерывание по приему данных*/
 	HAL_UART_Receive_IT (&huart1, receiveBuffer, (uint8_t) 1);
 
-
-
+    sd_ini();
+   // init();
+   init();
 
 	/* Init scheduler */
 	osKernelInitialize();
@@ -164,7 +324,16 @@ int main(void)
 	}
 }
 
-void debugMsg(const char* msg, bool withTime, bool newLine)
+void UART_Printf(const char* fmt, ...) {
+    char buff[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buff, sizeof(buff), fmt, args);
+    HAL_UART_Transmit(&huart3, (uint8_t*)buff, strlen(buff),
+                      HAL_MAX_DELAY);
+    va_end(args);
+}
+void debugMSG(const char* msg, bool withTime, bool newLine)
 {
 	int tick = osKernelGetTickCount();
 	char tickLine[24];

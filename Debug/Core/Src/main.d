@@ -39,7 +39,10 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
  ../Core/Inc/fonts.h ../Core/Inc/keyboard.h ../Core/Inc/accelerometer.h \
- ../Core/Inc/helper.h ../Core/Inc/nmea_parser.h
+ ../Core/Inc/helper.h ../Core/Inc/nmea_parser.h ../Core/Inc/sd.h \
+ ../Core/Inc/main.h \
+ C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ff.h \
+ C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ffconf.h
 
 ../Core/Inc/main.h:
 
@@ -134,3 +137,11 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Inc/helper.h:
 
 ../Core/Inc/nmea_parser.h:
+
+../Core/Inc/sd.h:
+
+../Core/Inc/main.h:
+
+C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ff.h:
+
+C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ffconf.h:

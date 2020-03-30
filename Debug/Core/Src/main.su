@@ -1,16 +1,18 @@
-main.cpp:190:6:void StartSDcardTask(void*)	8	static
-main.cpp:380:6:void StartDysplayTask(void*)	40	static
-main.cpp:482:6:void StartAccelTask(void*)	8	static
-main.cpp:508:6:void StartgpsNMEA_ParserTask(void*)	512	static
+main.cpp:358:6:void StartSDcardTask(void*)	8	static
+main.cpp:548:6:void StartDysplayTask(void*)	40	static
+main.cpp:650:6:void StartAccelTask(void*)	8	static
+main.cpp:676:6:void StartgpsNMEA_ParserTask(void*)	512	static
 helper.h:43:13:osStatus_t osQueue<T, size>::send(const T&, TickType_t) [with T = buzzerStruct; unsigned int size = 2]	0	static
 helper.h:43:13:osStatus_t osQueue<T, size>::send(const T&, TickType_t) [with T = buttonStruct; unsigned int size = 1]	0	static
-main.cpp:277:6:void StartKeyboardTask(void*)	48	static
-main.cpp:258:6:void StartBuzzerTask(void*)	24	static
-main.cpp:204:6:void StartDefaultTask(void*)	24	static
-main.cpp:167:6:void debugMsg(const char*, bool, bool)	56	static
-main.cpp:562:6:void Error_Handler()	0	static
-main.cpp:569:6:void SystemClock_Config()	88	static
+main.cpp:445:6:void StartKeyboardTask(void*)	48	static
+main.cpp:426:6:void StartBuzzerTask(void*)	24	static
+main.cpp:372:6:void StartDefaultTask(void*)	24	static
+main.cpp:326:6:)	272	static
+main.cpp:97:6:void init()	2456	static
+main.cpp:335:6:void debugMSG(const char*, bool, bool)	56	static
+main.cpp:730:6:void Error_Handler()	0	static
+main.cpp:737:6:void SystemClock_Config()	88	static
 helper.h:67:7:void osTask<size>::start(osThreadFunc_t) [with unsigned int size = 64]	56	static
 helper.h:67:7:void osTask<size>::start(osThreadFunc_t) [with unsigned int size = 256]	56	static
-main.cpp:98:5:int main()	88	static
-main.cpp:859:1:cpp)	0	static
+main.cpp:257:5:int main()	88	static
+main.cpp:1027:1:cpp)	0	static
