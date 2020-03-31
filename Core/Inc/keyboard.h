@@ -14,9 +14,10 @@
 #include "Buzzer.h"
 #include "helper.h"
 
-#define LONG_PRESS_TIME 500
-#define BTN_COUNT       3
-
+#define BTN_LONG_PRESS_TIME 					500
+#define BTN_DBL_LONG_PRESS_TIME 				500
+#define BTN_COUNT       						3
+#define BTN_CHECK_DELAY      					5
 
 #define	BUTTON_LONG_PRESSED_BUZZER_FREQ   		4000
 #define	BUTTON_LONG_RELEASED_BUZZER_FREQ 		4500
@@ -34,6 +35,8 @@ typedef enum
 	BUTTON_POLL = 0,
 	BUTTON_LONG_PRESSED,
 	BUTTON_LONG_RELEASED,
+	BUTTON_DBL_LONG_PRESSED,
+	BUTTON_DBL_LONG_RELEASED,
 	BUTTON_SHORT_PRESSED,
 	BUTTON_SHORT_RELEASED
 } ButtonState;

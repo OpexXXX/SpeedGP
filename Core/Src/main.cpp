@@ -228,12 +228,7 @@ void init() {
 
 int main(void)
 {
-
-	/* MCU Configuration--------------------------------------------------------*/
-
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
-
 	SystemClock_Config();
 
 	/* Initialize all configured peripherals */
@@ -246,6 +241,7 @@ int main(void)
 
 	BuzzerSetVolume(0);
 	HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);
+
 	HAL_Delay(50);
 	ssd1306_Init();
 	HAL_Delay(50);
@@ -253,9 +249,10 @@ int main(void)
 	HAL_Delay(50);
 	ssd1306_UpdateScreen();
 	HAL_Delay(50);
+
 	MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
 
-	//USART1->CR1 |= USART_CR1_TCIE; /*//прерывание по окончанию передачи*/
+
 	USART1->CR1 |= USART_CR1_RXNEIE; /*//прерывание по приему данных*/
 	HAL_UART_Receive_IT (&huart1, receiveBuffer, (uint8_t) 1);
 
@@ -344,8 +341,7 @@ void StartKeyboardTask(void *argument)
 	for(;;)
 	{
 		KeyboardHadler.checkKeyboard();
-
-		osDelay(5);
+		osDelay(BTN_CHECK_DELAY);
 	}
 }
 

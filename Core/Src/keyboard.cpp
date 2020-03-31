@@ -50,8 +50,7 @@ ButtonState Button::getState()
 
 	if(pinState && this->btnState==BUTTON_POLL)
 	{
-		this->btnState = BUTTON_SHORT_PRESSED;
-	    this->start_press_timer = osKernelGetTickCount();
+		btnShortPressed();
 		return BUTTON_SHORT_PRESSED;
 	}
 
@@ -82,7 +81,8 @@ ButtonState Button::getState()
 
 void Button::btnShortPressed()
 {
-
+	this->btnState = BUTTON_SHORT_PRESSED;
+		    this->start_press_timer = osKernelGetTickCount();
 }
 void Button::btnLongPressed()
 {

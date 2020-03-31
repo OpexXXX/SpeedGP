@@ -44,15 +44,8 @@ public:
 
 	osMessageQueueId_t xHandle;
 		const uint16_t queueSize;
-		//uint8_t *xQueueBuffer;
-		//StaticQueue_t xQueueControlBlock;
 		const char *NameQ;
 };
-// Definitions for defaultTask
-
-
-
-
 
 class osTask
 {
