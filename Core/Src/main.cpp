@@ -1,44 +1,38 @@
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "defines.h"
 #include "Buzzer.h"
 #include "ssd1306.h"
 #include "fonts.h"
 #include "keyboard.h"
 #include "accelerometer.h"
-#include "helper.h"
 #include "nmea_parser.h"
-#include "sd.h"
+#include "SDcard.h"
 
-#include "ff.h"
-#include "cmsis_os.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-
-/* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
 
-/* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi2;
 TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
-osTask defaultTask("defaultTask",64);
+//osTask defaultTask("defaultTask",64);
 osTask buzzerTask("buzzerTask",64);
 osTask keyboardTask("keyboardTask",70);
-osTask dysplayTask("dysplayTask",140);
+osTask dysplayTask("dysplayTask",256);
 osTask accelTask("accelTask",64);
 osTask gpsNMEA_ParserT("gpsNMEA_ParserT",200);
-osTask sdCardTask("sdCardTask",1024,osPriorityAboveNormal3);
+osTask sdCardTask("sdCardTask",1024);
 
-osQueue<buzzerStruct> buzzerQueueHandle(2,"buzzerQueue");
-osQueue<uint16_t> dysplayQueueHandle(16,"dysplayQueue");
+osQueue<buzzerStruct> buzzerQueueHandle(1,"buzzerQueue");
+//osQueue<uint16_t> dysplayQueueHandle(16,"dysplayQueue");
+
+osQueue<Flash::stringStruct> toSDcardStringQueueHandle(1,"toSDcardStringQueue");
 osQueue<Keyboard::buttonEventStruct> keyboardQueueHandle(1,"keyboardQueue");
 osQueue<uint8_t> GPS_UARTQueueHandle(64,"GPS_UARTQueue");
+
 
 /* Definitions for I2C_BinarySem */
 osSemaphoreId_t I2C_BinarySemHandle;
@@ -59,6 +53,8 @@ const osSemaphoreAttr_t  debugUARTBinarySem_attributes = {
 TM_MPU9250_t accelStruct;
 uint8_t receiveBuffer[32];
 
+char stringBufferSDcard[96]={0};
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -67,6 +63,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM2_Init(void);
+
 void StartDefaultTask(void *argument);
 void StartBuzzerTask(void *argument);
 void StartKeyboardTask(void *argument);
@@ -74,157 +71,10 @@ void StartDysplayTask(void *argument);
 void StartAccelTask(void *argument);
 void StartgpsNMEA_ParserTask(void *argument);
 void StartSDcardTask(void *argument);
-void StartDebugUARTTask(void *argument);
-void UART_Printf(const char* fmt, ...);
 
-void init() {
-    FATFS fs;
-    FRESULT res;
-    UART_Printf("Ready!\r\n");
 
-    // mount the default drive
-    res = f_mount(&fs, "", 0);
-    if(res != FR_OK) {
-        UART_Printf("f_mount() failed, res = %d\r\n", res);
-        return;
-    }
-    UART_Printf("f_mount() done!\r\n");
-    uint32_t freeClust;
-    FATFS* fs_ptr = &fs;
-    // Warning! This fills fs.n_fatent and fs.csize!
-    res = f_getfree("/", &freeClust, &fs_ptr);
-    if(res != FR_OK) {
-        UART_Printf("f_getfree() failed, res = %d\r\n", res);
-        return;
-    }
 
-    UART_Printf("f_getfree() done!\r\n");
-    uint32_t totalBlocks = (fs.n_fatent - 2) * fs.csize;
-    uint32_t freeBlocks = freeClust * fs.csize;
-    switch (fs.fs_type) {//(0, FS_FAT12, FS_FAT16, FS_FAT32 or FS_EXFAT) */
-		case 1:
-			 UART_Printf("FAT12\r\n");
-			break;
-		case 2:
-			  UART_Printf( "FAT16\r\n");
-					break;
-		case 3:
-			  UART_Printf( "FAT32\r\n");
-					break;
-		case 4:
-			  UART_Printf("EXFAT\r\n");
-					break;
-		default:
-			break;
-	}
 
-    UART_Printf("Total blocks: %lu (%lu Mb)\r\n",
-                totalBlocks, totalBlocks / 2000);
-    UART_Printf("Free blocks: %lu (%lu Mb)\r\n",
-                freeBlocks, freeBlocks / 2000);
-
-    DIR dir;
-    res = f_opendir(&dir, "/");
-    if(res != FR_OK) {
-        UART_Printf("f_opendir() failed, res = %d\r\n", res);
-        return;
-    }
-
-    FILINFO fileInfo;
-    uint32_t totalFiles = 0;
-    uint32_t totalDirs = 0;
-    UART_Printf("--------\r\nRoot directory:\r\n");
-    for(;;) {
-        res = f_readdir(&dir, &fileInfo);
-        if((res != FR_OK) || (fileInfo.fname[0] == '\0')) {
-            break;
-        }
-
-        if(fileInfo.fattrib & AM_DIR) {
-            UART_Printf("  DIR  %s\r\n", fileInfo.fname);
-            totalDirs++;
-        } else {
-            UART_Printf("  FILE %s\r\n", fileInfo.fname);
-            totalFiles++;
-        }
-    }
-
-    UART_Printf("(total: %lu dirs, %lu files)\r\n--------\r\n",
-                totalDirs, totalFiles);
-
-    res = f_closedir(&dir);
-    if(res != FR_OK) {
-        UART_Printf("f_closedir() failed, res = %d\r\n", res);
-        return;
-    }
-
-    UART_Printf("Writing to log1.txt...\r\n");
-
-    char writeBuff[128];
-    snprintf(writeBuff, sizeof(writeBuff),
-        "Total blocks: %lu (%lu Mb); Free blocks: %lu (%lu Mb)\r\n",
-        totalBlocks, totalBlocks / 2000,
-        freeBlocks, freeBlocks / 2000);
-
-    FIL logFile;
-    res = f_open(&logFile, "log1.txt", FA_OPEN_APPEND | FA_WRITE);
-    if(res != FR_OK) {
-        UART_Printf("f_open() failed, res = %d\r\n", res);
-        return;
-    }
-
-    unsigned int bytesToWrite = strlen(writeBuff);
-    unsigned int bytesWritten;
-    res = f_write(&logFile, writeBuff, bytesToWrite, &bytesWritten);
-    if(res != FR_OK) {
-        UART_Printf("f_write() failed, res = %d\r\n", res);
-        return;
-    }
-
-    if(bytesWritten < bytesToWrite) {
-        UART_Printf("WARNING! Disk is full.\r\n");
-    }
-
-    res = f_close(&logFile);
-    if(res != FR_OK) {
-        UART_Printf("f_close() failed, res = %d\r\n", res);
-        return;
-    }
-
-    UART_Printf("Reading file...\r\n");
-    FIL msgFile;
-    res = f_open(&msgFile, "log1.txt", FA_READ);
-    if(res != FR_OK) {
-        UART_Printf("f_open() failed, res = %d\r\n", res);
-        return;
-    }
-
-    char readBuff[128];
-    unsigned int bytesRead;
-    res = f_read(&msgFile, readBuff, sizeof(readBuff)-1, &bytesRead);
-    if(res != FR_OK) {
-        UART_Printf("f_read() failed, res = %d\r\n", res);
-        return;
-    }
-
-    readBuff[bytesRead] = '\0';
-    UART_Printf("```\r\n%s\r\n```\r\n", readBuff);
-
-    res = f_close(&msgFile);
-    if(res != FR_OK) {
-        UART_Printf("f_close() failed, res = %d\r\n", res);
-        return;
-    }
-
-    // Unmount
-    res = f_mount(NULL, "", 0);
-    if(res != FR_OK) {
-        UART_Printf("Unmount failed, res = %d\r\n", res);
-        return;
-    }
-
-    UART_Printf("Done!\r\n");
-}
 
 int main(void)
 {
@@ -256,24 +106,22 @@ int main(void)
 	USART1->CR1 |= USART_CR1_RXNEIE; /*//прерывание по приему данных*/
 	HAL_UART_Receive_IT (&huart1, receiveBuffer, (uint8_t) 1);
 
-    sd_ini();
-   // init();
-
+	// init();
 
 	/* Init scheduler */
 	osKernelInitialize();
-
 	I2C_BinarySemHandle = osSemaphoreNew(1, 1, &I2C_BinarySem_attributes);
 	accelStructBinarySemHandle = osSemaphoreNew(1,1, &accelStructBinarySem_attributes);
 	debugUARTBinarySemHandle = osSemaphoreNew(1,1, &debugUARTBinarySem_attributes);
 
 	buzzerQueueHandle.createQueue();
-	dysplayQueueHandle.createQueue();
+//	dysplayQueueHandle.createQueue();
 	keyboardQueueHandle.createQueue();
 	GPS_UARTQueueHandle.createQueue();
+	toSDcardStringQueueHandle.createQueue();
 
 	/* creation of defaultTask */
-	defaultTask.start(StartDefaultTask);
+//	defaultTask.start(StartDefaultTask);
 	buzzerTask.start(StartBuzzerTask);				//Handle = osThreadNew(StartBuzzerTask, NULL, &buzzerTask_attributes);
 	keyboardTask.start(StartKeyboardTask);			//Handle = osThreadNew(StartKeyboardTask, NULL, &keyboardTask_attributes);
 	dysplayTask.start(StartDysplayTask);			//Handle = osThreadNew(StartDysplayTask, NULL, &dysplayTask_attributes);
@@ -288,23 +136,42 @@ int main(void)
 	}
 }
 
-void UART_Printf(const char* fmt, ...) {
-    char buff[256];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buff, sizeof(buff), fmt, args);
-    HAL_UART_Transmit(&huart3, (uint8_t*)buff, strlen(buff),
-                      HAL_MAX_DELAY);
-    va_end(args);
-}
-
 
 void StartSDcardTask(void *argument)
 {
-	   init();
+
+	Flash::SDcard card;
+	FRESULT init_result = card.initSD();
+	osStatus_t queueStatus;
+	Flash::stringStruct tempString;
+
+
 	for(;;)
 	{
-		osDelay(20);
+		while(init_result!=FR_OK)
+		{
+			osDelay(1000);
+			init_result = card.initSD();
+			//buzzerQueueHandle.send(Flash::buzErrorInit);
+		}
+		queueStatus = toSDcardStringQueueHandle.receive(&tempString);
+		if(queueStatus == osOK){
+		FRESULT writeRes = card.writeString(tempString.fileName, tempString.string);
+		if(writeRes!= FR_OK)
+		{
+			init_result =writeRes;
+#ifdef DEBUG_FROM_UART3
+			UART_Printf("write Error %d \r\n", writeRes);
+#endif
+		}else {
+#ifdef DEBUG_FROM_UART3
+			UART_Printf("StartSDcardTask f_close() %d \r\n", writeRes);
+#endif
+		}
+		}
+#ifdef DEBUG_FROM_UART3
+		UART_Printf("StartSDcardTask EXIT \r\n");
+#endif
 	}
 }
 
@@ -334,7 +201,6 @@ void StartBuzzerTask(void *argument)
 		}
 	}
 }
-
 void StartKeyboardTask(void *argument)
 {
 	Keyboard::Hadler KeyboardHadler = Keyboard::Hadler(&keyboardQueueHandle,&buzzerQueueHandle);
@@ -344,15 +210,11 @@ void StartKeyboardTask(void *argument)
 		osDelay(BTN_CHECK_DELAY);
 	}
 }
-
 /* USER CODE END Header_StartDysplayTask */
 void StartDysplayTask(void *argument)
 {
 	/* USER CODE BEGIN StartDysplayTask */
 	/* Infinite loop */
-
-
-
 	for(;;)
 	{
 		osSemaphoreAcquire(accelStructBinarySemHandle,osWaitForever);
@@ -360,81 +222,42 @@ void StartDysplayTask(void *argument)
 		//std::string ssa;
 		ssd1306_Fill(Black);
 		ssd1306_SetCursor(2,2);
-		sprintf(str, "%d", accelStruct.Ax_Raw);
-		ssd1306_WriteString("Ax:",Font_7x10,White);
+		sprintf(str, "Ax %d", accelStruct.Ax_Raw);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//debugMsg(" Ax:",0,0);
-		//debugMsg(str,0,0);
 
 		ssd1306_SetCursor(2,12);
-		sprintf(str, "%d", accelStruct.Ay_Raw);
-		ssd1306_WriteString("Ay:",Font_7x10,White);
+		sprintf(str, "Ay %d", accelStruct.Ay_Raw);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//debugMsg(" Ay:",0,0);
-		//debugMsg(str,0,0);
 
 		ssd1306_SetCursor(2,22);
-		sprintf(str, "%d", accelStruct.Az_Raw);
-		ssd1306_WriteString("Az:",Font_7x10,White);
+		sprintf(str, "Az %d", accelStruct.Az_Raw);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//	debugMsg(" Az:",0,0);
-		//	debugMsg(str,0,0);
-
 		ssd1306_SetCursor(60,2);
-		sprintf(str, "%d", accelStruct.Gx_Raw);
-		ssd1306_WriteString("Gx:",Font_7x10,White);
+		sprintf(str, "Gx %d", accelStruct.Gx_Raw);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//debugMsg( " Gx:",0,0);
-		//	debugMsg(str,0,0);
-
 		ssd1306_SetCursor(60,12);
-		sprintf(str, "%d", accelStruct.Gy_Raw);
-		ssd1306_WriteString("Gy:",Font_7x10,White);
-		ssd1306_WriteString(str,Font_7x10,White);
-		//	debugMsg(" Gy:",0,0);
-		//			debugMsg(str,0,0);
-
+		sprintf(str, "Gy %d", accelStruct.Gy_Raw);
+			ssd1306_WriteString(str,Font_7x10,White);
 		ssd1306_SetCursor(60,22);
-		sprintf(str, "%d", accelStruct.Gz_Raw);
-		ssd1306_WriteString("Gz:",Font_7x10,White);
+		sprintf(str, "Gz %d", accelStruct.Gz_Raw);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//	debugMsg(" Gz:",0,0);
-		//			debugMsg(str,0,0);
-
-		ssd1306_SetCursor(2,43);
-		//ssd1306_WriteString(gpsParser->HDOP,Font_7x10,White);
-
 		ssd1306_SetCursor(2,33);
-		sprintf(str, "%d", accelStruct.Mx_Raw*50);
-		ssd1306_WriteString("Mx:",Font_7x10,White);
+		sprintf(str, "Mx %d", accelStruct.Mx_Raw*50);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//	debugMsg(" Mx:",0,0);
-		//				debugMsg(str,0,0);
 		ssd1306_SetCursor(2,43);
-		sprintf(str, "%d", accelStruct.My_Raw*50);
-		ssd1306_WriteString("My:",Font_7x10,White);
+		sprintf(str, "My %d", accelStruct.My_Raw*50);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//	debugMsg(" My:",0,0);
-		//	debugMsg(str,0,0);
-
 		ssd1306_SetCursor(2,53);
-		sprintf(str, "%d", accelStruct.Mz_Raw*50);
-		ssd1306_WriteString("Mz:",Font_7x10,White);
+		sprintf(str, "Mz %d", accelStruct.Mz_Raw*50);
 		ssd1306_WriteString(str,Font_7x10,White);
-		//	debugMsg(" Mz:",0,0);
-		//				debugMsg(str,0,0);
-		//				debugMsg(" ",0,1);
-		/*	if(gpsParser->Status[0]=='V'){
-						ssd1306_WriteChar(gpsParser->Status[0],Font_7x10,White);
-					}else{
-
-					ssa = gpsParser->UTCtime;
-					ssd1306_WriteString(ssa.c_str(),Font_7x10,White);
-					}*/
 		osSemaphoreRelease(accelStructBinarySemHandle);
 
-
-
+		Flash::stringStruct tempString;
+		//UART_Printf("strcpy START \r\n");
+		tempString.fileName="accel.txt";
+		tempString.string = "Строка String";
+		//UART_Printf("strcpy END \r\n");
+		toSDcardStringQueueHandle.send(tempString);
 		ssd1306_UpdateScreen();
 		osDelay(10);
 	}
@@ -450,8 +273,6 @@ void StartDysplayTask(void *argument)
 /* USER CODE END Header_StartAccelTask */
 void StartAccelTask(void *argument)
 {
-	/* USER CODE BEGIN StartAccelTask */
-	/* Infinite loop */
 	for(;;)
 	{
 		osSemaphoreAcquire(accelStructBinarySemHandle, osWaitForever);
@@ -461,20 +282,11 @@ void StartAccelTask(void *argument)
 		osDelay(1);
 		TM_MPU9250_ReadMag(&accelStruct);
 		osDelay(1);
-
 		osSemaphoreRelease(accelStructBinarySemHandle);
 		osDelay(2);
 	}
-	/* USER CODE END StartAccelTask */
 }
 
-/* USER CODE BEGIN Header_StartgpsNMEA_ParserTask */
-/**
- * @brief Function implementing the gpsNMEA_ParserT thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartgpsNMEA_ParserTask */
 void StartgpsNMEA_ParserTask(void *argument)
 {
 	/* USER CODE BEGIN StartgpsNMEA_ParserTask */
@@ -522,19 +334,11 @@ void StartgpsNMEA_ParserTask(void *argument)
 		}
 
 	}
-	/* USER CODE END StartgpsNMEA_ParserTask */
 }
 
-/**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
 void Error_Handler(void)
 {
-	/* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	  HAL_UART_Transmit(&huart3, (uint8_t *) "ERROR ERROR!!!", 14, 10);
-	/* USER CODE END Error_Handler_Debug */
+	HAL_UART_Transmit(&huart3, (uint8_t *) "ERROR ERROR!!!", 14, 10);
 }
 void SystemClock_Config(void)
 {

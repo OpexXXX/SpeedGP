@@ -7,9 +7,9 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
+#include <sdlowlevel.h>
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
-#include "sd.h"
 #include <stdio.h>
 #include <string.h>
 /* Definitions of physical drive number for each drive */
@@ -34,6 +34,10 @@ DSTATUS disk_status (
 		BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
+#ifdef SD_DEBUG
+	sprintf(str1,"disk.cpp disk_status() \r\n");
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
 	return 0;
 }
 
@@ -76,7 +80,8 @@ DRESULT disk_read (
 
 	if (count == 1) /* Single block read */
 	{
-		SD_Read_Block(buff,sector); //Ñ÷èòàåì áëîê â áóôåð
+		uint8_t res  =  SD_Read_Block(buff,sector);
+		if(res!=0) return RES_ERROR;
 		count = 0;
 	}
 	else /* Multiple block read */
@@ -87,7 +92,6 @@ DRESULT disk_read (
 	}
 	SPI_Release();
 	return count ? RES_ERROR : RES_OK;
-	return RES_OK;
 	/* USER CODE END READ */
 }
 
@@ -119,7 +123,8 @@ DRESULT disk_write (
 	 /* Convert to byte address if needed */
 	if (count == 1) /* Single block read */
 	{
-		SD_Write_Block((BYTE*)buff,sector); //Ñ÷èòàåì áëîê â áóôåð
+		uint8_t res = SD_Write_Block((BYTE*)buff,sector); //Ñ÷èòàåì áëîê â áóôåð
+		if (res!=0)return RES_ERROR;
 		count = 0;
 	}
 	else /* Multiple block read */

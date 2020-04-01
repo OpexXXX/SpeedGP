@@ -27,6 +27,10 @@
 extern "C" {
 #endif
 
+//#define DEBUG_FROM_UART3
+//#define  SD_DEBUG
+//#define  SD_DEBUG_SHOW_READ
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 

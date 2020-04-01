@@ -9,8 +9,6 @@
 #define INC_BUZZER_H_
 
 #include "stm32f1xx_hal.h"
-//#include "cmsis_os.h"
-
 
 void BuzzerSetFreq(uint16_t freq);
 void BuzzerSetVolume(uint16_t volume);

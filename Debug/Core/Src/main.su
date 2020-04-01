@@ -1,14 +1,12 @@
-main.cpp:317:6:void StartDefaultTask(void*)	8	static
-main.cpp:341:6:void StartKeyboardTask(void*)	152	static
-main.cpp:353:6:void StartDysplayTask(void*)	40	static
-main.cpp:455:6:void StartAccelTask(void*)	8	static
-main.cpp:325:6:void StartBuzzerTask(void*)	24	static
-main.cpp:482:6:void StartgpsNMEA_ParserTask(void*)	512	static
-helper.h:72:7:void osTask::start(osThreadFunc_t)	56	static
-main.cpp:294:6:)	272	static
-main.cpp:80:6:void init()	2456	static
-main.cpp:305:6:void StartSDcardTask(void*)	8	static
-main.cpp:536:6:void Error_Handler()	0	static
-main.cpp:543:6:void SystemClock_Config()	88	static
-main.cpp:229:5:int main()	64	static
-main.cpp:833:1:cpp)	0	static
+main.cpp:204:6:void StartKeyboardTask(void*)	152	static
+main.cpp:274:6:void StartAccelTask(void*)	8	static
+main.cpp:290:6:void StartgpsNMEA_ParserTask(void*)	512	static
+main.cpp:214:6:void StartDysplayTask(void*)	48	static
+main.cpp:140:6:void StartSDcardTask(void*)	608	static
+main.cpp:189:6:void StartBuzzerTask(void*)	24	static
+helper.h:80:7:void osTask::start(osThreadFunc_t)	56	static
+main.cpp:181:6:void StartDefaultTask(void*)	8	static
+main.cpp:339:6:void Error_Handler()	0	static
+main.cpp:343:6:void SystemClock_Config()	88	static
+main.cpp:79:5:int main()	64	static
+main.cpp:633:1:cpp)	0	static

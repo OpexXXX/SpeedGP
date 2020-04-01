@@ -101,7 +101,7 @@ void Button::btnLongReleased()
 
 bool Button::checkLongpress()
 {
-	if((this->start_press_timer + LONG_PRESS_TIME)<osKernelGetTickCount())
+	if((this->start_press_timer + BTN_LONG_PRESS_TIME_DELAY)<osKernelGetTickCount())
 	{
 		return true;
 	}

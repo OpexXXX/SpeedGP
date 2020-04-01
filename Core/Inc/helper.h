@@ -8,6 +8,21 @@
 #ifndef SRC_QUEUE_H_
 #define SRC_QUEUE_H_
 #include "cmsis_os.h"
+#include "main.h"
+#ifdef DEBUG_FROM_UART3
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+extern UART_HandleTypeDef huart3;
+
+#endif
+
+
+#ifdef DEBUG_FROM_UART3
+
+void UART_Printf(const char* fmt, ...);
+
+#endif
 
 template<class T>
 class osQueue

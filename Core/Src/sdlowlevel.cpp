@@ -1,4 +1,4 @@
-#include "sd.h"
+#include <sdlowlevel.h>
 #ifdef SD_DEBUG
 #include <stdio.h>
 #include <string.h>
@@ -109,14 +109,30 @@ uint8_t SD_Read_Block (uint8_t *buff, uint32_t lba)
 	uint16_t cnt;
 
 	result=SD_cmd (CMD17, lba); //CMD17 ������� ��� 50 � 96
-	if (result!=0x00) return 5; //�����, ���� ��������� �� 0x00
+	if (result!=0x00) {
+
+#ifdef SD_DEBUG
+	sprintf(str1,"sd.cpp SD_Read_Block: Error 5\r\n");
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
+		return 5;
+	} //�����, ���� ��������� �� 0x00
 	SPI_Release();
 	cnt=0;
 	do{ //���� ������ �����
 		result=SPI_ReceiveByte();
 		cnt++;
 	} while ( (result!=0xFE)&&(cnt<0xFFFF) );
-	if (cnt>=0xFFFF) return 5;
+	if (cnt>=0xFFFF)
+	{
+
+#ifdef SD_DEBUG
+	sprintf(str1,"sd.cpp SD_Read_Block: Error 5\r\n");
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
+		return 5;
+	}
+
 	for (cnt=0;cnt<512;cnt++) buff[cnt]=SPI_ReceiveByte(); //�������� ����� ����� �� ���� � �����
 	SPI_Release(); //���������� ����������� �����
 	SPI_Release();
@@ -147,27 +163,50 @@ uint8_t SD_Read_Block (uint8_t *buff, uint32_t lba)
 //-----------------------------------------------
 uint8_t SD_Write_Block (uint8_t *buff, uint32_t lba)
 {
+
 #ifdef SD_DEBUG
 	sprintf(str1,"sd.cpp SD_Write_Block: 0x%010X  %d\r\n",lba,lba);
 	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
 #endif
+
 	uint8_t result;
 	uint16_t cnt;
-	result=SD_cmd(CMD24,lba); //CMD24 ������� ��� 51 � 97-98
-	if (result!=0x00) return 6; //�����, ���� ��������� �� 0x00
+	result=SD_cmd(CMD24,lba);
+	if (result!=0x00){
+
+#ifdef SD_DEBUG
+	sprintf(str1,"sd.cpp SD_WRITE_Block: Error 6 \r\n");
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
+		return 6;
+	}
 	SPI_Release();
-	SPI_SendByte (0xFE); //������ ������
-	for (cnt=0;cnt<512;cnt++) SPI_SendByte(buff[cnt]); //������
-	SPI_Release(); //��������� ���������� �����
+	SPI_SendByte (0xFE);
+	for (cnt=0;cnt<512;cnt++) SPI_SendByte(buff[cnt]);
+	SPI_Release();
 	SPI_Release();
 	result=SPI_ReceiveByte();
-	if ((result&0x05)!=0x05) return 6; //�����, ���� ��������� �� 0x05 (������� ��� 111)
+	if ((result&0x05)!=0x05){
+
+#ifdef SD_DEBUG
+	sprintf(str1,"sd.cpp SD_WRITE_Block: Error 6 \r\n");
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
+		return 6;
+
+	}
 	cnt=0;
 	do { //
 		result=SPI_ReceiveByte();
 		cnt++;
 	} while ( (result!=0xFF)&&(cnt<0xFFFF) );
-	if (cnt>=0xFFFF) return 6;
+	if (cnt>=0xFFFF){
+#ifdef SD_DEBUG
+	sprintf(str1,"sd.cpp SD_WRITE_Block: Error 6 \r\n");
+	HAL_UART_Transmit(&huart3,(uint8_t*)str1,strlen(str1),0x1000);
+#endif
+		return 6;
+	}
 	return 0;
 }
 //-----------------------------------------------
