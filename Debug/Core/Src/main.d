@@ -25,10 +25,6 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/defines.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Core/Inc/helper.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -42,8 +38,8 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/defines.h \
  ../Core/Inc/fonts.h ../Core/Inc/keyboard.h ../Core/Inc/Buzzer.h \
  ../Core/Inc/accelerometer.h ../Core/Inc/nmea_parser.h \
  ../Core/Inc/SDcard.h ../Core/Inc/defines.h ../Core/Inc/sdlowlevel.h \
- C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ff.h \
- C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ffconf.h
+ C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/myFATFS/ff.h \
+ C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/myFATFS/ffconf.h
 
 ../Core/Inc/defines.h:
 
@@ -101,14 +97,6 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/defines.h \
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
 
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h:
-
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
-
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
-
-../Core/Inc/helper.h:
-
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
@@ -149,6 +137,6 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/defines.h \
 
 ../Core/Inc/sdlowlevel.h:
 
-C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ff.h:
+C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/myFATFS/ff.h:
 
-C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/FatFs/ffconf.h:
+C:/Users/79029/STM32CubeIDE/workspace_1.3.0/SpeedGPS/Middlewares/Third_Party/myFATFS/ffconf.h:

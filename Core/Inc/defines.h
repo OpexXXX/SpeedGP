@@ -12,7 +12,7 @@
 //#define  SD_DEBUG
 //#define  SD_DEBUG_SHOW_READ
 #include "main.h"
-#include "helper.h"
+
 #include "cmsis_os.h"
 #include <string.h>
 #include <stdio.h>

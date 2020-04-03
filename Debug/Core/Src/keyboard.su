@@ -8,5 +8,5 @@ keyboard.cpp:91:6:void Keyboard::Button::btnShortReleased()	0	static
 keyboard.cpp:95:6:void Keyboard::Button::btnLongReleased()	0	static
 keyboard.cpp:102:6:bool Keyboard::Button::checkLongpress()	8	static
 keyboard.cpp:47:13:Keyboard::ButtonState Keyboard::Button::getState()	8	static
-keyboard.cpp:112:1:Keyboard::Hadler::Hadler(osQueue<Keyboard::buttonEventStruct>*, osQueue<buzzerStruct>*)	24	static
-keyboard.cpp:116:6:void Keyboard::Hadler::checkKeyboard()	32	static
+keyboard.cpp:112:1:Keyboard::Hadler::Hadler(void**, void**)	24	static
+keyboard.cpp:116:6:void Keyboard::Hadler::checkKeyboard()	24	static

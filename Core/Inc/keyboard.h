@@ -12,24 +12,24 @@
 #include "main.h"
 #include "stm32f1xx.h"
 #include "Buzzer.h"
-#include "helper.h"
+
 
 
 #define BTN_COUNT       						3
 
-#define BTN_LONG_PRESS_TIME_DELAY				500
-#define BTN_DBL_LONG_PRESS_DELAY 				1500
-#define BTN_CHECK_DELAY      					5
+#define BTN_LONG_PRESS_TIME_DELAY				5000
+#define BTN_DBL_LONG_PRESS_DELAY 				15000
+#define BTN_CHECK_DELAY      					50
 
 #define	BUTTON_LONG_PRESSED_BUZZER_FREQ   		4000
 #define	BUTTON_LONG_RELEASED_BUZZER_FREQ 		4500
 #define	BUTTON_SHORT_PRESSED_BUZZER_FREQ 		3000
 #define BUTTON_SHORT_RELEASED_BUZZER_FREQ 		3500
 
-#define	BUTTON_LONG_PRESSED_BUZZER_TIME         20
-#define	BUTTON_LONG_RELEASED_BUZZER_TIME	20
-#define	BUTTON_SHORT_PRESSED_BUZZER_TIME	5
-#define BUTTON_SHORT_RELEASED_BUZZER_TIME	5
+#define	BUTTON_LONG_PRESSED_BUZZER_TIME         200
+#define	BUTTON_LONG_RELEASED_BUZZER_TIME	200
+#define	BUTTON_SHORT_PRESSED_BUZZER_TIME	50
+#define BUTTON_SHORT_RELEASED_BUZZER_TIME	50
 
 namespace Keyboard{
 typedef enum
@@ -118,11 +118,11 @@ public:
 			Button(BTN_2_GPIO_Port,BTN_2_Pin,"BTN2"),
 			Button(BTN_3_GPIO_Port,BTN_3_Pin,"BTN3")
 	};
-	Hadler(osQueue<buttonEventStruct> *  keyboardQueue,	osQueue<buzzerStruct> * buzzerQueue);
+	Hadler(osMessageQueueId_t *  keyboardQueue,	osMessageQueueId_t * buzzerQueue);
 	void checkKeyboard();
 private:
-	osQueue<buttonEventStruct> * keyboardQueue;
-	osQueue<buzzerStruct>* buzzerQueue;
+	osMessageQueueId_t * keyboardQueue;
+	osMessageQueueId_t* buzzerQueue;
 	//const osMessageQueueId_t* xHandle;
 };
 

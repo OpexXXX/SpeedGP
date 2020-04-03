@@ -47,6 +47,21 @@ gpsMessege Parser::getMessege() {
     return (gpsPack);
 }
 
+/*//Парсер посылки UART 128 байт*/
+GPS_MESSEGE_TYPE Parser::parseSting(char* data) {
+uint8_t count = 0;
+	char * buffer = data;
+	while(buffer&&count<128)
+	{
+		GPS_MESSEGE_TYPE result;
+		result = charParser(buffer[0]);
+		if(result!= GPS_NULL) return result;
+		count++;
+		buffer++;
+	}
+	return GPS_NULL;
+}
+
 /*//Парсер посылки UART 1 байт*/
 GPS_MESSEGE_TYPE Parser::charParser(unsigned char data) {
     static unsigned char ByteCount = 0xff;

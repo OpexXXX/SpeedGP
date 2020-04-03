@@ -10,7 +10,6 @@
 #include "defines.h"
 #include <sdlowlevel.h>
 #include "ff.h"
-#include "helper.h"
 #include "Buzzer.h"
 
 namespace Flash {
@@ -19,7 +18,7 @@ namespace Flash {
 
  struct stringStruct {
 const char* fileName;
-const char* string;
+char string[100];
 };
 
 
@@ -30,12 +29,14 @@ private:
 	FRESULT mount;
 	uint32_t totalBlocks;
 	uint32_t freeBlocks;
-
+	FIL file;
 public:
+	FRESULT openFile();
+	FRESULT fileSync();
 	SDcard();
 	virtual ~SDcard();
 	FRESULT initSD();
-	FRESULT writeString(const char * filename,const char * strin );
+	FRESULT writeString(const char * strin );
 	uint32_t getFreeBlocks();
 	uint32_t gettotalBlocks();
 };

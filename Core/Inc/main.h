@@ -27,21 +27,20 @@
 extern "C" {
 #endif
 
-//#define DEBUG_FROM_UART3
-//#define  SD_DEBUG
-//#define  SD_DEBUG_SHOW_READ
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+#define  DEBUG_FROM_UART3
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -74,6 +73,7 @@ void Error_Handler(void);
 #define GPS_PPS_GPIO_Port GPIOB
 #define MPU_INT_Pin GPIO_PIN_15
 #define MPU_INT_GPIO_Port GPIOA
+#define MPU_INT_EXTI_IRQn EXTI15_10_IRQn
 #define BTN_3_Pin GPIO_PIN_3
 #define BTN_3_GPIO_Port GPIOB
 #define BTN_2_Pin GPIO_PIN_4
@@ -84,6 +84,9 @@ void Error_Handler(void);
 #define LED_LE_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
+#ifdef DEBUG_FROM_UART3
+void UART_Printf(const char* fmt, ...) ;
+#endif
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

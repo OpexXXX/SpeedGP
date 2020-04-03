@@ -13,22 +13,22 @@ buzzerStruct  Button::getBuzzer(ButtonState btnState)
 {
 
 	switch (btnState) {
-					case BUTTON_LONG_PRESSED:
-							return this->longPressBuzzer;
-						break;
-					case BUTTON_LONG_RELEASED:
-						return this->longReleeseBuzzer;
-							break;
-					case BUTTON_SHORT_PRESSED:
-						return this->shortPressBuzzer;
-							break;
-					case BUTTON_SHORT_RELEASED:
-						return this->shortReleeseBuzzer;
-							break;
-					default:
-						return this->longPressBuzzer;
-						break;
-				}
+	case BUTTON_LONG_PRESSED:
+		return this->longPressBuzzer;
+		break;
+	case BUTTON_LONG_RELEASED:
+		return this->longReleeseBuzzer;
+		break;
+	case BUTTON_SHORT_PRESSED:
+		return this->shortPressBuzzer;
+		break;
+	case BUTTON_SHORT_RELEASED:
+		return this->shortReleeseBuzzer;
+		break;
+	default:
+		return this->longPressBuzzer;
+		break;
+	}
 }
 
 Button::Button(GPIO_TypeDef * btnPort,uint16_t btnPin,const char* label):Label(label)
@@ -40,10 +40,10 @@ Button::Button(GPIO_TypeDef * btnPort,uint16_t btnPin,const char* label):Label(l
 }
 
 bool Button::readPin()
-		{
+{
 	bool result = HAL_GPIO_ReadPin(buttonPort, buttonPin)==GPIO_PIN_RESET;
 	return result;
-		}
+}
 ButtonState Button::getState()
 {
 	bool pinState = readPin();
@@ -82,7 +82,7 @@ ButtonState Button::getState()
 void Button::btnShortPressed()
 {
 	this->btnState = BUTTON_SHORT_PRESSED;
-		    this->start_press_timer = osKernelGetTickCount();
+	this->start_press_timer = osKernelGetTickCount();
 }
 void Button::btnLongPressed()
 {
@@ -109,7 +109,7 @@ bool Button::checkLongpress()
 };
 
 
-Hadler::Hadler(osQueue<buttonEventStruct> *  keyQueue,	osQueue<buzzerStruct> * buzQueue): keyboardQueue(keyQueue), buzzerQueue(buzQueue)
+Hadler::Hadler(osMessageQueueId_t *  keyQueue,	osMessageQueueId_t * buzQueue): keyboardQueue(keyQueue), buzzerQueue(buzQueue)
 {
 
 }
@@ -118,22 +118,28 @@ void Hadler::checkKeyboard()
 	for (int i = 0; i <BTN_COUNT ; ++i)
 	{
 		ButtonState stat = buttons[i].getState();
+		buzzerStruct buztemp;
 		switch (stat) {
-				case BUTTON_LONG_PRESSED:
-						this->buzzerQueue->send(buttons[i].getBuzzer(BUTTON_LONG_PRESSED));
-					break;
-				case BUTTON_LONG_RELEASED:
-					this->buzzerQueue->send(buttons[i].getBuzzer(BUTTON_LONG_RELEASED));
-						break;
-				case BUTTON_SHORT_PRESSED:
-					this->buzzerQueue->send(buttons[i].getBuzzer(BUTTON_SHORT_PRESSED));
-						break;
-				case BUTTON_SHORT_RELEASED:
-					this->buzzerQueue->send(buttons[i].getBuzzer(BUTTON_SHORT_RELEASED));
-						break;
-				default:
-					break;
-			}
+		case BUTTON_LONG_PRESSED:
+			buztemp = buttons[i].getBuzzer(BUTTON_LONG_PRESSED);
+			osMessageQueuePut(*buzzerQueue, &buztemp,0U, 0U);
+			break;
+		case BUTTON_LONG_RELEASED:
+			buztemp = buttons[i].getBuzzer(BUTTON_LONG_RELEASED);
+						osMessageQueuePut(*buzzerQueue, &buztemp,0U, 0U);
+
+			break;
+		case BUTTON_SHORT_PRESSED:
+			buztemp = buttons[i].getBuzzer(BUTTON_SHORT_PRESSED);
+								osMessageQueuePut(*buzzerQueue, &buztemp,0U, 0U);
+			break;
+		case BUTTON_SHORT_RELEASED:
+			buztemp = buttons[i].getBuzzer(BUTTON_SHORT_RELEASED);
+								osMessageQueuePut(*buzzerQueue, &buztemp,0U, 0U);
+			break;
+		default:
+			break;
+		}
 	}
 
 }

@@ -34,10 +34,7 @@ Core/Src/keyboard.o: ../Core/Src/keyboard.cpp ../Core/Inc/keyboard.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h \
- ../Core/Inc/Buzzer.h ../Core/Inc/helper.h
+ ../Core/Inc/Buzzer.h
 
 ../Core/Inc/keyboard.h:
 
@@ -113,12 +110,4 @@ Core/Src/keyboard.o: ../Core/Src/keyboard.cpp ../Core/Inc/keyboard.h \
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
 
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h:
-
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h:
-
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h:
-
 ../Core/Inc/Buzzer.h:
-
-../Core/Inc/helper.h:

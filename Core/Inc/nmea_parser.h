@@ -57,10 +57,13 @@ uint32_t getDifTime(uint32_t startTime, uint32_t stopTime);
 float convertStrDegToDecimal(char *coor);
 
 class Parser {
+private:
+
+	GPS_MESSEGE_TYPE charParser(unsigned char);		//Парсер пакета UART
 public:
     Parser();
+    GPS_MESSEGE_TYPE parseSting(char*);
     gpsMessege getMessege();               //Подготовить посылку
-    GPS_MESSEGE_TYPE charParser(unsigned char);		//Парсер пакета UART
     virtual
     ~Parser();
 //private:

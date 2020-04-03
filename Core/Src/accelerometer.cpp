@@ -24,7 +24,7 @@
  * |----------------------------------------------------------------------
  */
 #include "accelerometer.h"
-
+#include "cmsis_os.h"
 /* Magnetometer */
 #define WHO_AM_I_AK8963     0x00 // Result = 0x48
 #define INFO                0x01
@@ -247,7 +247,7 @@ IIC_Result I2C_Read(uint8_t device_address, uint8_t register_address, uint8_t* d
 IIC_Result I2C_IsDeviceConnected(uint8_t device_address) {
 
 	/* Check if device is ready for communication */
-	if (HAL_I2C_IsDeviceReady(ihandle, device_address, 2, 5) != HAL_OK) {
+	if (HAL_I2C_IsDeviceReady(ihandle, device_address, 2,  500) != HAL_OK) {
 		/* Return error */
 
 		return IIC_Result_Error;
@@ -266,9 +266,6 @@ TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250
 	    MPU9250->I2C_Addr = MPU9250_I2C_ADDR | (uint8_t)dev;
 	    MPU9250->I2C_Addr_Mag = MPU9250_I2C_ADDR_MAG;
 
-
-
-
 	    /* Check if device connected */
 	    if (I2C_IsDeviceConnected(MPU9250->I2C_Addr) != IIC_Result_Ok) {
 	        return TM_MPU9250_Result_DeviceNotConnected;
@@ -282,11 +279,11 @@ TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250
 
 	    // wake up device
 	    I2C_Write( MPU9250->I2C_Addr, PWR_MGMT_1, 0x00); // Clear sleep mode bit (6), enable all sensors
-	    HAL_Delay(100); // Wait for all registers to reset
+	    osDelay(10000); // Wait for all registers to reset
 
 	    // get stable time source
 	    I2C_Write( MPU9250->I2C_Addr, PWR_MGMT_1, 0x01);  // Auto select clock source to be PLL gyroscope reference if ready else
-	    HAL_Delay(200);
+	    osDelay(20000);
 
 	    // Configure Gyro and Thermometer
 	    // Disable FSYNC and set thermometer and gyro bandwidth to 41 and 42 Hz, respectively;
@@ -294,10 +291,11 @@ TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250
 	    // be higher than 1 / 0.0059 = 170 Hz
 	    // DLPF_CFG = bits 2:0 = 011; this limits the sample rate to 1000 Hz for both
 	    // With the MPU9250, it is possible to get gyro sample rates of 32 kHz (!), 8 kHz, or 1 kHz
+
 	    I2C_Write( MPU9250->I2C_Addr, CONFIG, 0x03);
 
 	    // Set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
-	    I2C_Write( MPU9250->I2C_Addr, SMPLRT_DIV, 0x04);  // Use a 200 Hz rate; a rate consistent with the filter update rate
+	    I2C_Write( MPU9250->I2C_Addr, SMPLRT_DIV, 0x04);  //0x04   Use a 200 Hz rate; a rate consistent with the filter update rate
 	                            // determined inset in CONFIG above
 
 	    // Set gyroscope full scale range
@@ -331,7 +329,7 @@ TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250
 	    // Set interrupt pin active high, push-pull, hold interrupt pin level HIGH until interrupt cleared,
 	    // clear on read of INT_STATUS, and enable I2C_BYPASS_EN so additional chips
 	    // can join the I2C bus and all can be controlled by the Arduino as master
-	    I2C_Write( MPU9250->I2C_Addr, INT_PIN_CFG, 0x22);
+	    I2C_Write( MPU9250->I2C_Addr, INT_PIN_CFG, 0x32);
 	    I2C_Write( MPU9250->I2C_Addr, INT_ENABLE, 0x01);
 
 	    /* Check if device connected */
@@ -340,16 +338,16 @@ TM_MPU9250_Result_t MPU9250_Init(I2C_HandleTypeDef* handle,TM_MPU9250_t* MPU9250
 	    }
 
 	    I2C_Write( MPU9250->I2C_Addr_Mag, AK8963_CNTL, 0x00); // Power down magnetometer
-	    HAL_Delay(10);
+	    osDelay(1000);
 	    I2C_Write( MPU9250->I2C_Addr_Mag, AK8963_CNTL, 0x0F); // Enter Fuse ROM access mode
-	    HAL_Delay(10);
+	    osDelay(1000);
 	    I2C_Write( MPU9250->I2C_Addr_Mag, AK8963_CNTL, 0x00); // Power down magnetometer
-	    HAL_Delay(10);
+	    osDelay(1000);
 	    // Configure the magnetometer for continuous read and highest resolution
 	    // set Mscale bit 4 to 1 (0) to enable 16 (14) bit resolution in CNTL register,
 	    // and enable continuous mode data acquisition Mmode (bits [3:0]), 0010 for 8 Hz and 0110 for 100 Hz sample rates
 	    I2C_Write( MPU9250->I2C_Addr_Mag, AK8963_CNTL, 1 << 4 | 2); // Set magnetometer data resolution and sample ODR
-	    HAL_Delay(10);
+	    osDelay(1000);
 
 	    /* Calculate multiplicators */
 	    MPU9250->AMult = 2.0f / 32768.0f;
@@ -364,7 +362,9 @@ TM_MPU9250_Result_t TM_MPU9250_ReadAcce(TM_MPU9250_t* MPU9250) {
 	uint8_t data[6];
 
 	/* Read accelerometer data */
-	I2C_ReadMulti( MPU9250->I2C_Addr, ACCEL_XOUT_H, data, 6);
+	IIC_Result resul =
+	 I2C_ReadMulti( MPU9250->I2C_Addr, ACCEL_XOUT_H, data, 6);
+if(resul == IIC_Result_Error) return TM_MPU9250_Result_Error;
 
 	MPU9250->Ax_Raw = ((int16_t)data[0] << 8) | data[1];
 	MPU9250->Ay_Raw = ((int16_t)data[2] << 8) | data[3];
@@ -378,8 +378,9 @@ TM_MPU9250_Result_t TM_MPU9250_ReadAcce(TM_MPU9250_t* MPU9250) {
 
 TM_MPU9250_Result_t TM_MPU9250_ReadGyro(TM_MPU9250_t* MPU9250) {
 	uint8_t data[6];
+	IIC_Result resul =
 	I2C_ReadMulti( MPU9250->I2C_Addr, GYRO_XOUT_H, data, 6);
-
+	if(resul == IIC_Result_Error) return TM_MPU9250_Result_Error;
 	MPU9250->Gx_Raw = ((int16_t)data[0] << 8) | data[1];
 	MPU9250->Gy_Raw = ((int16_t)data[2] << 8) | data[3];
 	MPU9250->Gz_Raw = ((int16_t)data[4] << 8) | data[5];
@@ -395,8 +396,9 @@ TM_MPU9250_Result_t TM_MPU9250_ReadMag(TM_MPU9250_t* MPU9250) {
 	uint8_t check;
 
 	/* Check status */
+	IIC_Result resul =
 	I2C_Read( MPU9250->I2C_Addr_Mag, AK8963_ST1, &check);
-
+	if(resul == IIC_Result_Error) return TM_MPU9250_Result_Error;
 	if (check & 0x01) {
 		I2C_ReadMulti( MPU9250->I2C_Addr_Mag, AK8963_XOUT_L, data, 7);
 		if (!(data[6] & 0x08)) {
@@ -410,8 +412,9 @@ TM_MPU9250_Result_t TM_MPU9250_ReadMag(TM_MPU9250_t* MPU9250) {
 
 TM_MPU9250_Result_t TM_MPU9250_DataReady(TM_MPU9250_t* MPU9250) {
 	uint8_t data;
+	IIC_Result resul =
 	I2C_Read( MPU9250->I2C_Addr, INT_STATUS, &data);
-
+	if(resul == IIC_Result_Error) return TM_MPU9250_Result_Error;
 	if (data & 0x01) {
 		return TM_MPU9250_Result_Ok;
 	}

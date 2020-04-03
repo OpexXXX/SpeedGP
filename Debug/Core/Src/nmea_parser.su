@@ -1,12 +1,13 @@
 nmea_parser.cpp:34:1:NMEA_UART::Parser::~Parser()	0	static
 nmea_parser.cpp:34:1:virtual NMEA_UART::Parser::~Parser()	8	static
 nmea_parser.cpp:12:1:NMEA_UART::Parser::Parser()	24	static
-nmea_parser.cpp:195:7:float NMEA_UART::stringToFloat(char*)	40	static
-nmea_parser.cpp:213:10:uint32_t NMEA_UART::getDifTime(uint32_t, uint32_t)	32	static
-nmea_parser.cpp:226:7:float NMEA_UART::convertStrDegToDecimal(char*)	16	static
-nmea_parser.cpp:239:5:int NMEA_UART::asciiToInt(char*)	8	static
-nmea_parser.cpp:51:18:NMEA_UART::GPS_MESSEGE_TYPE NMEA_UART::Parser::charParser(unsigned char)	16	static
-nmea_parser.cpp:250:10:uint32_t NMEA_UART::asciiBeforeDotToInt(char*)	8	static
-nmea_parser.cpp:263:10:uint32_t NMEA_UART::asciiAfterDotToInt(char*)	8	static
-nmea_parser.cpp:283:10:uint32_t NMEA_UART::asciiRemoveDotToInt(char*)	0	static
+nmea_parser.cpp:210:7:float NMEA_UART::stringToFloat(char*)	40	static
+nmea_parser.cpp:228:10:uint32_t NMEA_UART::getDifTime(uint32_t, uint32_t)	32	static
+nmea_parser.cpp:241:7:float NMEA_UART::convertStrDegToDecimal(char*)	16	static
+nmea_parser.cpp:254:5:int NMEA_UART::asciiToInt(char*)	8	static
+nmea_parser.cpp:66:18:NMEA_UART::GPS_MESSEGE_TYPE NMEA_UART::Parser::charParser(unsigned char)	16	static
+nmea_parser.cpp:51:18:NMEA_UART::GPS_MESSEGE_TYPE NMEA_UART::Parser::parseSting(char*)	16	static
+nmea_parser.cpp:265:10:uint32_t NMEA_UART::asciiBeforeDotToInt(char*)	8	static
+nmea_parser.cpp:278:10:uint32_t NMEA_UART::asciiAfterDotToInt(char*)	8	static
+nmea_parser.cpp:298:10:uint32_t NMEA_UART::asciiRemoveDotToInt(char*)	0	static
 nmea_parser.cpp:37:12:NMEA_UART::gpsMessege NMEA_UART::Parser::getMessege()	32	static

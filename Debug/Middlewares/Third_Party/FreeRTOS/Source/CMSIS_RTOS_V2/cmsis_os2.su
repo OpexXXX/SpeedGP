@@ -10,7 +10,7 @@ cmsis_os2.c:312:10:osKernelGetTickCount	0	static,ignoring_inline_asm
 cmsis_os2.c:324:10:osKernelGetTickFreq	0	static
 cmsis_os2.c:328:10:osKernelGetSysTimerCount	8	static,ignoring_inline_asm
 cmsis_os2.c:342:10:osKernelGetSysTimerFreq	0	static
-cmsis_os2.c:348:14:osThreadNew	32	static,ignoring_inline_asm
+cmsis_os2.c:348:14:osThreadNew	48	static,ignoring_inline_asm
 cmsis_os2.c:414:13:osThreadGetName	0	static,ignoring_inline_asm
 cmsis_os2.c:427:14:osThreadGetId	0	static,ignoring_inline_asm
 cmsis_os2.c:439:17:osThreadGetState	8	static,ignoring_inline_asm
@@ -48,12 +48,12 @@ cmsis_os2.c:1251:12:osMutexAcquire	8	static,ignoring_inline_asm
 cmsis_os2.c:1292:12:osMutexRelease	8	static,ignoring_inline_asm
 cmsis_os2.c:1325:14:osMutexGetOwner	0	static,ignoring_inline_asm
 cmsis_os2.c:1340:12:osMutexDelete	8	static,ignoring_inline_asm
-cmsis_os2.c:1369:17:osSemaphoreNew	16	static,ignoring_inline_asm
+cmsis_os2.c:1369:17:osSemaphoreNew	24	static,ignoring_inline_asm
 cmsis_os2.c:1436:12:osSemaphoreAcquire	16	static,ignoring_inline_asm
 cmsis_os2.c:1473:12:osSemaphoreRelease	16	static,ignoring_inline_asm
 cmsis_os2.c:1501:10:osSemaphoreGetCount	0	static,ignoring_inline_asm
 cmsis_os2.c:1517:12:osSemaphoreDelete	8	static,ignoring_inline_asm
-cmsis_os2.c:1545:20:osMessageQueueNew	16	static,ignoring_inline_asm
+cmsis_os2.c:1545:20:osMessageQueueNew	24	static,ignoring_inline_asm
 cmsis_os2.c:1598:12:osMessageQueuePut	16	static,ignoring_inline_asm
 cmsis_os2.c:1639:12:osMessageQueueGet	16	static,ignoring_inline_asm
 cmsis_os2.c:1680:10:osMessageQueueGetCapacity	0	static

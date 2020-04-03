@@ -13,41 +13,127 @@ typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticQueue_t osStaticMessageQDef_t;
 
 I2C_HandleTypeDef hi2c1;
+
 SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi2_tx;
+DMA_HandleTypeDef hdma_spi2_rx;
+
 TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
+DMA_HandleTypeDef hdma_usart3_tx;
 
-//osTask defaultTask("defaultTask",64);
-osTask buzzerTask("buzzerTask",64);
-osTask keyboardTask("keyboardTask",70);
-osTask dysplayTask("dysplayTask",256);
-osTask accelTask("accelTask",64);
-osTask gpsNMEA_ParserT("gpsNMEA_ParserT",200);
-osTask sdCardTask("sdCardTask",1024);
+osThreadId_t buzzerTaskHandle;
+const osThreadAttr_t buzzerTask_attributes = {
+		name : "buzzerTask",
 
-osQueue<buzzerStruct> buzzerQueueHandle(1,"buzzerQueue");
+		attr_bits: NULL,   ///< attribute bits
+		cb_mem:NULL,   ///< memory for control block
+		cb_size:NULL,   ///< size of provided memory for control block
+		stack_mem:NULL,   ///< memory for stack
+		stack_size : 64 * 4,
+		priority : (osPriority_t) osPriorityNormal,
+		//	tz_module:NULL,  ///< TrustZone module identifier
+		//	reserved:NULL  ///< reserved (must be 0)
+};
+
+
+osThreadId_t keyboardTaskHandle;
+const osThreadAttr_t keyboardTask_attributes = {
+		name : "keyboardTask",
+		attr_bits: NULL,   ///< attribute bits
+		cb_mem:NULL,   ///< memory for control block
+		cb_size:NULL,   ///< size of provided memory for control block
+		stack_mem:NULL,   ///< memory for stack
+		stack_size : 84 * 4,
+		priority : (osPriority_t) osPriorityNormal,
+};
+osThreadId_t dysplayTaskHandle;
+const osThreadAttr_t dysplayTask_attributes = {
+		name : "dysplayTask",
+		attr_bits: NULL,   ///< attribute bits
+		cb_mem:NULL,   ///< memory for control block
+		cb_size:NULL,   ///< size of provided memory for control block
+		stack_mem:NULL,   ///< memory for stack
+		stack_size : 140 * 4,
+		priority : (osPriority_t) osPriorityNormal,
+};
+osThreadId_t accelTaskHandle;
+const osThreadAttr_t accelTask_attributes = {
+		name : "accelTask",
+		attr_bits: NULL,   ///< attribute bits
+		cb_mem:NULL,   ///< memory for control block
+		cb_size:NULL,   ///< size of provided memory for control block
+		stack_mem:NULL,   ///< memory for stack
+		stack_size : 256 * 4,
+		priority : (osPriority_t) osPriorityHigh7,
+};
+
+osThreadId_t gpsNMEA_ParserTHandle;
+const osThreadAttr_t gpsNMEA_ParserT_attributes = {
+		name : "gpsNMEA_ParserT",
+		attr_bits: NULL,   ///< attribute bits
+		cb_mem:NULL,   ///< memory for control block
+		cb_size:NULL,   ///< size of provided memory for control block
+		stack_mem:NULL,   ///< memory for stack
+		stack_size : 386 * 4,
+		priority : (osPriority_t) osPriorityNormal1,
+};
+osThreadId_t sdCardTaskHandle;
+const osThreadAttr_t sdCardTask_attributes = {
+		name : "sdCardTask",
+		attr_bits: NULL,   ///< attribute bits
+		cb_mem:NULL,   ///< memory for control block
+		cb_size:NULL,   ///< size of provided memory for control block
+		stack_mem:NULL,   ///< memory for stack
+		stack_size : 1024 * 4,
+		priority : (osPriority_t) osPriorityNormal,
+};
+
+osMessageQueueId_t myQueue01Handle;
+const osMessageQueueAttr_t myQueue01_attributes = {
+		.name = "myQueue01"
+};
+
+osMessageQueueId_t buzzerQueueHandle;
+const osMessageQueueAttr_t buzzerQueue_attributes = {
+		.name = "buzzerQueue"
+};
+//osQueue<buzzerStruct> (1,"buzzerQueue");
 //osQueue<uint16_t> dysplayQueueHandle(16,"dysplayQueue");
-
-osQueue<Flash::stringStruct> toSDcardStringQueueHandle(1,"toSDcardStringQueue");
-osQueue<Keyboard::buttonEventStruct> keyboardQueueHandle(1,"keyboardQueue");
-osQueue<uint8_t> GPS_UARTQueueHandle(64,"GPS_UARTQueue");
-
-
-/* Definitions for I2C_BinarySem */
-osSemaphoreId_t I2C_BinarySemHandle;
-const osSemaphoreAttr_t I2C_BinarySem_attributes = {
-		.name = "I2C_BinarySem"
+osMessageQueueId_t toSDcardStringQueueHandle;
+const osMessageQueueAttr_t toSDcardStringQueue_attributes = {
+		.name = "toSDcardStringQueue"
 };
-/* Definitions for accelStructBinarySem */
-osSemaphoreId_t accelStructBinarySemHandle;
-const osSemaphoreAttr_t accelStructBinarySem_attributes = {
-		.name = "accelStructBinarySem"
+//osQueue<Flash::stringStruct> toSDcardStringQueueHandle(1,"toSDcardStringQueue");
+
+//osQueue<Keyboard::buttonEventStruct> keyboardQueueHandle(1,"keyboardQueue");
+osMessageQueueId_t keyboardQueueHandle;
+const osMessageQueueAttr_t keyboardQueue_attributes = {
+		.name = "keyboardQueue"
 };
-osSemaphoreId_t debugUARTBinarySemHandle;
-const osSemaphoreAttr_t  debugUARTBinarySem_attributes = {
-		.name = " debugUARTBinarySem"
+osMessageQueueId_t GPS_UARTQueueHandle;
+const osMessageQueueAttr_t GPS_UARTQueue_attributes = {
+		.name = "GPS_UARTQueue"
 };
+
+//osQueue<uartNMEAstring> GPS_UARTQueueHandle(5,"GPS_UARTQueue");
+/* Definitions for myBinarySem01 */
+osEventFlagsId_t DataReadyEvent;
+
+
+
+osMutexId_t I2C2MutexHandle;
+const osMutexAttr_t I2C2Mutex_attributes = {
+		.name = "I2C2Mutex",
+};
+osMutexId_t AccelStructMutexHandle;
+const osMutexAttr_t AccelStructMutex_attributes = {
+		.name = "AccelStructMutex",
+};
+
+
 /* USER CODE BEGIN PV */
 
 TM_MPU9250_t accelStruct;
@@ -58,6 +144,7 @@ char stringBufferSDcard[96]={0};
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
@@ -74,8 +161,6 @@ void StartSDcardTask(void *argument);
 
 
 
-
-
 int main(void)
 {
 	HAL_Init();
@@ -83,6 +168,7 @@ int main(void)
 
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
+	MX_DMA_Init();
 	MX_SPI2_Init();
 	MX_USART1_UART_Init();
 	MX_USART3_UART_Init();
@@ -92,42 +178,43 @@ int main(void)
 	BuzzerSetVolume(0);
 	HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);
 
-	HAL_Delay(50);
-	ssd1306_Init();
-	HAL_Delay(50);
-	ssd1306_Fill(Black);
-	HAL_Delay(50);
-	ssd1306_UpdateScreen();
-	HAL_Delay(50);
-
-	MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
+	//	HAL_Delay(50);
+	////	ssd1306_Init();
+	//	HAL_Delay(50);
+	////	ssd1306_Fill(Black);
+	//	HAL_Delay(50);
+	////	ssd1306_UpdateScreen();
+	//	HAL_Delay(50);
 
 
-	USART1->CR1 |= USART_CR1_RXNEIE; /*//прерывание по приему данных*/
-	HAL_UART_Receive_IT (&huart1, receiveBuffer, (uint8_t) 1);
 
 	// init();
 
 	/* Init scheduler */
 	osKernelInitialize();
-	I2C_BinarySemHandle = osSemaphoreNew(1, 1, &I2C_BinarySem_attributes);
-	accelStructBinarySemHandle = osSemaphoreNew(1,1, &accelStructBinarySem_attributes);
-	debugUARTBinarySemHandle = osSemaphoreNew(1,1, &debugUARTBinarySem_attributes);
 
-	buzzerQueueHandle.createQueue();
-//	dysplayQueueHandle.createQueue();
-	keyboardQueueHandle.createQueue();
-	GPS_UARTQueueHandle.createQueue();
-	toSDcardStringQueueHandle.createQueue();
+
+	I2C2MutexHandle = osMutexNew(&I2C2Mutex_attributes);
+	AccelStructMutexHandle = osMutexNew(&AccelStructMutex_attributes);
+	//myBinarySem01Handle = osSemaphoreNew(1, 1, &myBinarySem01_attributes);
+	DataReadyEvent = osEventFlagsNew(NULL);
+
+	buzzerQueueHandle = osMessageQueueNew (1, sizeof(buzzerStruct), &buzzerQueue_attributes);
+	keyboardQueueHandle = osMessageQueueNew(2, sizeof(Keyboard::buttonEventStruct), &keyboardQueue_attributes);
+	GPS_UARTQueueHandle = osMessageQueueNew(8, sizeof(uint8_t)*128, &GPS_UARTQueue_attributes);
+	toSDcardStringQueueHandle = osMessageQueueNew(24, sizeof(Flash::stringStruct), &toSDcardStringQueue_attributes);
 
 	/* creation of defaultTask */
-//	defaultTask.start(StartDefaultTask);
-	buzzerTask.start(StartBuzzerTask);				//Handle = osThreadNew(StartBuzzerTask, NULL, &buzzerTask_attributes);
-	keyboardTask.start(StartKeyboardTask);			//Handle = osThreadNew(StartKeyboardTask, NULL, &keyboardTask_attributes);
-	dysplayTask.start(StartDysplayTask);			//Handle = osThreadNew(StartDysplayTask, NULL, &dysplayTask_attributes);
-	accelTask.start(StartAccelTask);				//Handle = osThreadNew(StartAccelTask, NULL, &accelTask_attributes);
-	gpsNMEA_ParserT.start(StartgpsNMEA_ParserTask);	//Handle = osThreadNew(StartgpsNMEA_ParserTask, NULL, &gpsNMEA_ParserT_attributes);
-	sdCardTask.start(StartSDcardTask);
+	//	defaultTask.start(StartDefaultTask);
+	//	buzzerTaskHandle = osThreadNew(StartBuzzerTask, NULL, &buzzerTask_attributes);
+	//keyboardTaskHandle = osThreadNew(StartKeyboardTask, NULL, &keyboardTask_attributes);
+	//	dysplayTaskHandle = osThreadNew(StartDysplayTask, NULL, &dysplayTask_attributes);
+
+	accelTaskHandle = osThreadNew(StartAccelTask, NULL, &accelTask_attributes);
+	gpsNMEA_ParserTHandle = osThreadNew(StartgpsNMEA_ParserTask, NULL, &gpsNMEA_ParserT_attributes);
+	//sdCardTaskHandle = osThreadNew(StartSDcardTask, NULL, &sdCardTask_attributes);
+
+
 	/* Start scheduler */
 	osKernelStart();
 	while (1)
@@ -142,37 +229,39 @@ void StartSDcardTask(void *argument)
 
 	Flash::SDcard card;
 	FRESULT init_result = card.initSD();
+
 	osStatus_t queueStatus;
 	Flash::stringStruct tempString;
 
+	uint32_t syncTimer=osKernelGetTickCount();
 
 	for(;;)
 	{
 		while(init_result!=FR_OK)
 		{
-			osDelay(1000);
+			osDelay(10000);
 			init_result = card.initSD();
+			UART_Printf("SD ini\r\n");
 			//buzzerQueueHandle.send(Flash::buzErrorInit);
 		}
-		queueStatus = toSDcardStringQueueHandle.receive(&tempString);
+
+		queueStatus = osMessageQueueGet(toSDcardStringQueueHandle, &tempString, NULL, osWaitForever);   // wait for message   toSDcardStringQueueHandle.receive(&);
 		if(queueStatus == osOK){
-		FRESULT writeRes = card.writeString(tempString.fileName, tempString.string);
-		if(writeRes!= FR_OK)
+			FRESULT writeRes = card.writeString(tempString.string);
+			if(writeRes!= FR_OK)
+			{
+				init_result =writeRes;
+			}
+		}
+		if((osKernelGetTickCount()-syncTimer)>500)
 		{
-			init_result =writeRes;
-#ifdef DEBUG_FROM_UART3
-			UART_Printf("write Error %d \r\n", writeRes);
-#endif
-		}else {
-#ifdef DEBUG_FROM_UART3
-			UART_Printf("StartSDcardTask f_close() %d \r\n", writeRes);
-#endif
+			syncTimer = osKernelGetTickCount();
+			card.fileSync();
 		}
-		}
-#ifdef DEBUG_FROM_UART3
-		UART_Printf("StartSDcardTask EXIT \r\n");
-#endif
+
+
 	}
+
 }
 
 
@@ -182,7 +271,7 @@ void StartDefaultTask(void *argument)
 {
 	for(;;)
 	{
-		osDelay(20);
+		osDelay(200);
 	}
 }
 
@@ -192,7 +281,8 @@ void StartBuzzerTask(void *argument)
 	osStatus_t status;
 	for(;;)
 	{
-		status = buzzerQueueHandle.receive(&buzzerParameters); // osMessageQueueGet(buzzerQueueHandle, &buzzerParameters, NULL, osWaitForever);   // wait for message
+		status = osMessageQueueGet(buzzerQueueHandle, &buzzerParameters, NULL, 0U);   // wait for message   toSDcardStringQueueHandle.receive(&);
+
 		if (status == osOK) {
 			BuzzerSetFreq(buzzerParameters.freq);
 			BuzzerSetVolume(buzzerParameters.volume);
@@ -217,7 +307,7 @@ void StartDysplayTask(void *argument)
 	/* Infinite loop */
 	for(;;)
 	{
-		osSemaphoreAcquire(accelStructBinarySemHandle,osWaitForever);
+
 		char str[32];
 		//std::string ssa;
 		ssd1306_Fill(Black);
@@ -237,7 +327,7 @@ void StartDysplayTask(void *argument)
 		ssd1306_WriteString(str,Font_7x10,White);
 		ssd1306_SetCursor(60,12);
 		sprintf(str, "Gy %d", accelStruct.Gy_Raw);
-			ssd1306_WriteString(str,Font_7x10,White);
+		ssd1306_WriteString(str,Font_7x10,White);
 		ssd1306_SetCursor(60,22);
 		sprintf(str, "Gz %d", accelStruct.Gz_Raw);
 		ssd1306_WriteString(str,Font_7x10,White);
@@ -250,16 +340,15 @@ void StartDysplayTask(void *argument)
 		ssd1306_SetCursor(2,53);
 		sprintf(str, "Mz %d", accelStruct.Mz_Raw*50);
 		ssd1306_WriteString(str,Font_7x10,White);
-		osSemaphoreRelease(accelStructBinarySemHandle);
 
-		Flash::stringStruct tempString;
-		//UART_Printf("strcpy START \r\n");
-		tempString.fileName="accel.txt";
-		tempString.string = "Строка String";
-		//UART_Printf("strcpy END \r\n");
-		toSDcardStringQueueHandle.send(tempString);
-		ssd1306_UpdateScreen();
-		osDelay(10);
+		//osStatus_t resultI2C = osMutexAcquire (I2C2MutexHandle, osWaitForever);
+		//		if(resultI2C == osOK)
+		//		{
+		//			ssd1306_UpdateScreen();
+		//		osMutexRelease(I2C2MutexHandle);
+		//			}
+
+		osDelay(400);
 	}
 	/* USER CODE END StartDysplayTask */
 }
@@ -270,20 +359,67 @@ void StartDysplayTask(void *argument)
  * @param argument: Not used
  * @retval None
  */
+
+
 /* USER CODE END Header_StartAccelTask */
 void StartAccelTask(void *argument)
 {
+	uint32_t delay = osKernelGetTickCount();
+	uint32_t Alldelay = osKernelGetTickCount();
+	uint32_t  stop=0;
+	uint32_t countMessage=0;
+	buzzerStruct errQueue = {
+			4000,
+			700,
+			BUZZER_VOLUME_MAX
+	};
+	TM_MPU9250_Result_t result;
+
+	result = MPU9250_Init(&hi2c1,&accelStruct,TM_MPU9250_Device_0);
+	UART_Printf("start accel task\r\n");
+
 	for(;;)
 	{
-		osSemaphoreAcquire(accelStructBinarySemHandle, osWaitForever);
-		TM_MPU9250_ReadAcce(&accelStruct);
-		osDelay(1);
-		TM_MPU9250_ReadGyro(&accelStruct);
-		osDelay(1);
-		TM_MPU9250_ReadMag(&accelStruct);
-		osDelay(1);
-		osSemaphoreRelease(accelStructBinarySemHandle);
-		osDelay(2);
+		Alldelay= osKernelGetTickCount();
+		if(osEventFlagsWait(DataReadyEvent, 0x01, osFlagsWaitAny, 100)){
+			//UART_Printf("%d",HAL_GPIO_ReadPin(MPU_INT_GPIO_Port, MPU_INT_Pin));
+			delay = osKernelGetTickCount();
+			result =	TM_MPU9250_ReadAcce(&accelStruct);
+			//result =	TM_MPU9250_ReadGyro(&accelStruct);
+			//result =	TM_MPU9250_ReadMag(&accelStruct);
+			if(countMessage%100==0){
+				stop = osKernelGetTickCount()-delay;
+//				UART_Printf("a %d:%d\r\n",stop,accelStruct.Ax_Raw);
+			}
+		}
+		if(osEventFlagsWait(DataReadyEvent, 0x01, osFlagsWaitAny, 100)){
+			//UART_Printf("%d",HAL_GPIO_ReadPin(MPU_INT_GPIO_Port, MPU_INT_Pin));
+			delay = osKernelGetTickCount();
+			//result =	TM_MPU9250_ReadAcce(&accelStruct);
+			result =	TM_MPU9250_ReadGyro(&accelStruct);
+			result =	TM_MPU9250_ReadMag(&accelStruct);
+			if(countMessage%100==0){
+				stop = osKernelGetTickCount()-delay;
+		//			UART_Printf("g %d:%d\r\n",stop,accelStruct.Gx_Raw);
+			}
+		}
+		if(osEventFlagsWait(DataReadyEvent, 0x01, osFlagsWaitAny, 100)){
+			//UART_Printf("%d",HAL_GPIO_ReadPin(MPU_INT_GPIO_Port, MPU_INT_Pin));
+			delay = osKernelGetTickCount();
+			//result =	TM_MPU9250_ReadAcce(&accelStruct);
+			//result =	TM_MPU9250_ReadGyro(&accelStruct);
+			result =	TM_MPU9250_ReadMag(&accelStruct);
+			if(countMessage%100==0){
+				stop = osKernelGetTickCount()-delay;
+		//		UART_Printf("m %d:%d\r\n",stop,accelStruct.Mx_Raw);
+			}
+		}
+		if(countMessage%100==0){
+			stop = osKernelGetTickCount()-Alldelay;
+
+			UART_Printf("del:%d:%d\r\n",stop,accelStruct.Ax_Raw);}
+		countMessage++;
+		//osDelay(200);
 	}
 }
 
@@ -291,25 +427,44 @@ void StartgpsNMEA_ParserTask(void *argument)
 {
 	/* USER CODE BEGIN StartgpsNMEA_ParserTask */
 	/* Infinite loop */
+	USART1->CR1 |= USART_CR1_RXNEIE; /*//прерывание по приему данных*/
+	HAL_UART_Receive_IT (&huart1, receiveBuffer, (uint8_t) 1);
+
 	osStatus_t status;
 
 	NMEA_UART::GPS_MESSEGE_TYPE messageType;
 	NMEA_UART::Parser gpsParser;
+	buzzerStruct errQueue = {
+			4500,
+			500,
+			BUZZER_VOLUME_MAX
+	};
+	char buff[128];
 	for(;;)
 	{
+		uint32_t start = osKernelGetTickCount();
 		using namespace NMEA_UART;
-		uint8_t sym=0;
-		status =GPS_UARTQueueHandle.receive(&sym);  //osMessageQueueGet(GPS_UARTQueueHandle, &sym, NULL, osWaitForever);   // wait for message
-		if (status == osOK) {
+		uint32_t countQ = osMessageQueueGetCount(GPS_UARTQueueHandle);
+		if( countQ >= 7 )
+		{
+		//	osMessageQueuePut(buzzerQueueHandle, &errQueue, 0, 1);
+		}
 
-			messageType  = gpsParser.charParser(sym);
+		status = osMessageQueueGet(GPS_UARTQueueHandle, &buff, NULL,osWaitForever );   // wait for message   toSDcardStringQueueHandle.receive(&);
+		if (status == osOK) {
+			messageType  = gpsParser.parseSting(buff);
+
+			Flash::stringStruct tempString;
+			memcpy(tempString.string,buff,strlen(buff));
+			osStatus_t queueStat = osMessageQueuePut(toSDcardStringQueueHandle, &tempString, 0U, 0U);
+
+
 			switch (messageType) {
 			case  GPS_MESSEGE_TYPE::GPS_NULL:
 				break;
 			case GPS_MESSEGE_TYPE::GPS_PRMC:
 				break;
 			case GPS_MESSEGE_TYPE::GPS_NRMC:
-
 				break;
 			case GPS_MESSEGE_TYPE::GPS_PGGA:
 				break;
@@ -322,6 +477,7 @@ void StartgpsNMEA_ParserTask(void *argument)
 			case GPS_MESSEGE_TYPE::GPS_PVTG:
 				break;
 			case GPS_MESSEGE_TYPE::GPS_NVTG:
+
 				break;
 			case GPS_MESSEGE_TYPE::GPS_GPGSA:
 				break;
@@ -330,9 +486,7 @@ void StartgpsNMEA_ParserTask(void *argument)
 			default:
 				break;
 			}
-
 		}
-
 	}
 }
 
@@ -372,12 +526,12 @@ void SystemClock_Config(void)
 	{
 		Error_Handler();
 	}
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
-	PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-	{
-		Error_Handler();
-	}
+	//	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
+	//	PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+	//	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+	//	{
+	//		Error_Handler();
+	//	}
 }
 
 /**
@@ -387,13 +541,9 @@ void SystemClock_Config(void)
  */
 static void MX_I2C1_Init(void)
 {
-
 	/* USER CODE BEGIN I2C1_Init 0 */
-
 	/* USER CODE END I2C1_Init 0 */
-
 	/* USER CODE BEGIN I2C1_Init 1 */
-
 	/* USER CODE END I2C1_Init 1 */
 	hi2c1.Instance = I2C1;
 	hi2c1.Init.ClockSpeed = 400000;
@@ -409,9 +559,7 @@ static void MX_I2C1_Init(void)
 		Error_Handler();
 	}
 	/* USER CODE BEGIN I2C1_Init 2 */
-
 	/* USER CODE END I2C1_Init 2 */
-
 }
 
 /**
@@ -566,7 +714,24 @@ static void MX_USART3_UART_Init(void)
 	/* USER CODE END USART3_Init 2 */
 
 }
+static void MX_DMA_Init(void)
+{
 
+	/* DMA controller clock enable */
+	__HAL_RCC_DMA1_CLK_ENABLE();
+
+	/* DMA interrupt init */
+	/* DMA1_Channel2_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+	/* DMA1_Channel4_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+	/* DMA1_Channel5_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
+}
 /**
  * @brief GPIO Initialization Function
  * @param None
@@ -613,7 +778,7 @@ static void MX_GPIO_Init(void)
 
 	/*Configure GPIO pin : MPU_INT_Pin */
 	GPIO_InitStruct.Pin = MPU_INT_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(MPU_INT_GPIO_Port, &GPIO_InitStruct);
 
@@ -630,6 +795,9 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(LED_LE_GPIO_Port, &GPIO_InitStruct);
 
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 6, 0);
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -649,4 +817,16 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
+#ifdef DEBUG_FROM_UART3
+
+void UART_Printf(const char* fmt, ...) {
+	char buff[256];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(buff, sizeof(buff), fmt, args);
+	HAL_UART_Transmit(&huart3, (uint8_t*)buff, strlen(buff),
+			HAL_MAX_DELAY);
+	va_end(args);
+}
+#endif
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

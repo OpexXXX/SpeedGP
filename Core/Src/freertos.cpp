@@ -63,10 +63,12 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
 __weak void configureTimerForRunTimeStats(void)
 {
 
+
 }
 
 __weak unsigned long getRunTimeCounterValue(void)
 {
+
 return 0;
 }
 /* USER CODE END 1 */
